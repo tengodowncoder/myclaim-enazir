@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>e-Nazir MyClaim System</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --primary-navy: #1a237e; 
+            --accent-blue: #00c6ff;
+            --sky-blue: #4da3ff; 
+            --glass-bg: rgba(255, 255, 255, 0.2); 
+        }
+
+        body {
+            background: linear-gradient(135deg, #f4f7f6 0%, #e1f5fe 100%);
+            background-attachment: fixed; 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* --- WRAPPER --- */
+        .wrapper {
+            display: flex;
+            width: 100%;
+            align-items: stretch;
+        }
+
+        /* --- SIDEBAR CRYSTAL GLASS --- */
+        #sidebar {
+            min-width: 65px; 
+            max-width: 65px;
+            background: var(--glass-bg) !important;
+            color: var(--primary-navy);
+            /* UBAHAN: Ditingkatkan kelajuan ke 0.1s supaya tiada delay */
+            transition: all 0.1s ease-in-out; 
+            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1001;
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            border-right: 3px solid var(--sky-blue) !important; 
+            overflow: hidden;
+        }
+
+        #sidebar:hover {
+            min-width: 320px;
+            max-width: 320px;
+            background: rgba(255, 255, 255, 0.4) !important;
+            box-shadow: 15px 0 45px rgba(77, 163, 255, 0.1);
+        }
+
+        .sidebar-header {
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .profile-section {
+            padding: 25px 10px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1.5px solid var(--sky-blue); 
+            object-fit: cover;
+            /* Sync kelajuan avatar 0.1s */
+            transition: all 0.1s ease-in-out;
+        }
+
+        #sidebar:hover .avatar-img {
+            width: 85px;
+            height: 85px;
+            margin-bottom: 15px;
+        }
+
+        .profile-info {
+            width: 100%;
+            opacity: 0;
+            visibility: hidden;
+            /* Teks keluar sekelip mata (0.1s) */
+            transition: opacity 0.1s ease-in-out;
+            white-space: normal !important;
+            word-wrap: break-word;
+            padding: 0 15px;
+        }
+
+        #sidebar:hover .profile-info {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .user-name {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--primary-navy);
+            line-height: 1.3;
+            display: block;
+        }
+
+        .badge-sector {
+            font-size: 0.65rem;
+            padding: 4px 8px;
+            background: var(--primary-navy);
+            color: white;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        .nav-link-custom {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            color: var(--primary-navy) !important;
+            text-decoration: none;
+            /* Sync kelajuan link 0.1s */
+            transition: 0.1s ease-in-out;
+            position: relative;
+        }
+
+        .nav-link-custom i {
+            min-width: 65px;
+            text-align: center;
+            font-size: 1.4rem;
+            color: var(--sky-blue); 
+        }
+
+        .nav-link-custom:hover { background: rgba(77, 163, 255, 0.1); }
+
+        .nav-link-custom:hover::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            height: 100%;
+            width: 3px;
+            background: var(--sky-blue); 
+        }
+
+        .nav-link-custom span, .menu-label {
+            opacity: 0;
+            visibility: hidden;
+            font-weight: 600;
+            /* Teks menu keluar sekelip mata (0.1s) */
+            transition: opacity 0.1s ease-in-out;
+            white-space: nowrap;
+        }
+
+        #sidebar:hover .nav-link-custom span,
+        #sidebar:hover .menu-label { opacity: 1; visibility: visible; }
+
+        .menu-label {
+            font-size: 0.7rem;
+            padding: 20px 25px 5px 25px;
+            color: var(--primary-navy);
+            opacity: 0.5;
+            text-transform: uppercase;
+        }
+
+        /* --- CONTENT AREA --- */
+        #content {
+            width: 100%;
+            margin-left: 65px; 
+            /* Sync penolakan content (margin-left) 0.1s */
+            transition: margin-left 0.1s ease-in-out; 
+            padding: 30px 40px; 
+        }
+
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.5) !important;
+            backdrop-filter: blur(15px);
+            border-bottom: 2px solid var(--sky-blue) !important; 
+            border-radius: 15px;
+            margin-bottom: 35px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+            padding: 1rem 1.5rem;
+        }
+
+        .badge-notify {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 0.6rem;
+            padding: 3px 6px;
+        }
+
+        .card {
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(77, 163, 255, 0.2) !important;
+            border-color: var(--sky-blue) !important;
+        }
+
+        .table tbody tr {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .table tbody tr:hover {
+            background-color: rgba(77, 163, 255, 0.08) !important;
+            transform: scale(1.005);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn {
+            transition: all 0.3s ease !important;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <nav id="sidebar">
+        <div class="sidebar-header">
+            <h5 class="mb-0 fw-bold" style="color: var(--sky-blue);"><i class="bi bi-shield-check fs-4"></i></h5>
+        </div>
+
+        <div class="profile-section">
+            <div class="profile-picture text-center">
+                {% if user.profile_picture_url %}
+                    <img src="{{ user.profile_picture_url }}" alt="Profile Google" class="avatar-img shadow-sm" style="object-fit: cover;">
+                {% else %}
+                    <img src="https://ui-avatars.com/api/?name={{ user.get_full_name|default:user.username }}&background=4da3ff&color=fff" class="avatar-img shadow-sm">
+                {% endif %}
+            </div>
+            
+            <div class="profile-info mt-2 text-center">
+                <span class="user-name">{{ user.get_full_name|upper }}</span>
+                <span class="badge-sector">{% if user.sektor %}{{ user.sektor|upper }}{% else %}MOE USER{% endif %}</span>
+            </div>
+        </div>
+
+        <ul class="nav flex-column mt-2">
+            <li>
+                <a href="{% url 'dashboard' %}" class="nav-link-custom">
+                    <i class="bi bi-speedometer2"></i> <span>Dashboard Utama</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'tuntut' %}" class="nav-link-custom">
+                    <i class="bi bi-pencil-square"></i> <span>Mohon Tuntutan</span>
+                </a>
+            </li>
+
+            {% if user.peranan == 'ptdm' or user.is_superuser %}
+                <div class="menu-label">PENGURUSAN</div>
+                <li>
+                    <a href="{% url 'ptdm_dashboard' %}" class="nav-link-custom">
+                        <i class="bi bi-calendar-event"></i> <span>Urus Planning</span>
+                    </a>
+                </li>
+            {% endif %}
+
+            {% if user.peranan == 'kewangan' or user.peranan == 'kns' or user.is_staff or user.is_superuser %}
+                <div class="menu-label">PENTADBIRAN</div>
+                
+                {% if user.peranan == 'kewangan' or user.is_superuser %}
+                    <li>
+                        <a href="{% url 'admin_dashboard' %}" class="nav-link-custom">
+                            <i class="bi bi-wallet2 text-warning"></i> <span>Kelulusan & Pantauan</span>
+                        </a>
+                    </li>
+                {% endif %}
+                
+                {% if user.peranan == 'kns' or user.is_superuser %}
+                    <li>
+                        <a href="{% url 'kns_dashboard' %}" class="nav-link-custom">
+                            <i class="bi bi-eye text-primary"></i> <span>Portal Pemerhatian</span>
+                        </a>
+                    </li>
+                {% endif %}
+            {% endif %}
+
+            <li class="mt-4 border-top border-dark border-opacity-10">
+                <a href="{% url 'logout' %}" class="nav-link-custom text-danger">
+                    <i class="bi bi-box-arrow-left"></i> <span>Log Keluar</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div id="content">
+        <nav class="navbar navbar-expand navbar-custom shadow-sm mb-4">
+            <div class="container-fluid">
+                <span class="navbar-text fw-bold text-dark d-none d-sm-inline">
+                    <i class="bi bi-list me-2" style="color: var(--sky-blue);"></i> MyClaim <span style="color: var(--sky-blue);">eNazir</span>
+                </span>
+                
+                <div class="ms-auto d-flex align-items-center gap-3">
+                    <div class="position-relative me-2">
+                        <a href="{% url 'dashboard' %}" class="text-dark fs-5">
+                            <i class="bi bi-bell"></i>
+                            {% if count_reject > 0 %}
+                                <span class="badge rounded-pill bg-danger badge-notify">{{ count_reject }}</span>
+                            {% endif %}
+                        </a>
+                    </div>
+                    <small class="text-muted d-none d-md-inline"><i class="bi bi-clock me-1"></i> {% now "d M Y" %}</small>
+                    <div class="vr mx-2 d-none d-md-inline"></div>
+                    <span class="small fw-bold text-primary d-none d-md-inline">{{ user.get_full_name|upper }}</span>
+                </div>
+            </div>
+        </nav>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-pill px-4 shadow-sm border-0 mb-4" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="container-fluid p-0">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

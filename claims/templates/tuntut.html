@@ -1,0 +1,218 @@
+{% extends "base.html" %} {% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            
+            <div class="text-center mb-5">
+                <h2 class="fw-bold text-navy" style="letter-spacing: -1px;">
+                    <i class="bi bi-file-earmark-medical-fill text-sky-blue me-2"></i>
+                    {% if edit_mode %}Kemaskini <span class="text-sky-blue">Permohonan</span>{% else %}Permohonan <span class="text-sky-blue">Tuntutan Baharu</span>{% endif %}
+                </h2>
+                <p class="text-muted">Sila pastikan maklumat diisi dengan lengkap dan sahih.</p>
+            </div>
+
+            <form method="post" id="claimForm" action="{% if edit_mode %}{% url 'edit_tuntutan' t.pk %}{% else %}{% url 'tuntut' %}{% endif %}">
+                {% csrf_token %}
+
+                <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+                    <div class="card-header bg-white py-3 border-0">
+                        <h6 class="mb-0 fw-bold text-primary">
+                            <i class="bi bi-person-badge-fill me-2"></i>A. MAKLUMAT PEMOHON
+                        </h6>
+                    </div>
+                    <div class="card-body p-4 bg-light bg-opacity-50">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Jenis Pemohon</label>
+                                <select name="jenis_pemohon" id="id_jenis_pemohon" class="form-select border-0 shadow-sm" onchange="tukarLabelPemohon()">
+                                    <option value="individu" {% if t.jenis_pemohon == 'individu' %}selected{% endif %}>Individu</option>
+                                    <option value="organisasi" {% if t.jenis_pemohon == 'organisasi' %}selected{% endif %}>Organisasi</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold" id="label_nama">Nama Penuh</label>
+                                <input type="text" name="nama_manual" id="input_nama" class="form-control border-0 shadow-sm" 
+                                       value="{% if edit_mode %}{{ t.nama_manual }}{% else %}{{ user.first_name }} {{ user.last_name }}{% endif %}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold" id="label_ic">No. Kad Pengenalan</label>
+                                <input type="text" name="ic_manual" id="input_ic" class="form-control border-0 shadow-sm" 
+                                       value="{% if edit_mode %}{{ t.ic_manual }}{% else %}{{ user.no_ic }}{% endif %}" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+                    <div class="card-header bg-white py-3 border-0">
+                        <h6 class="mb-0 fw-bold text-sky-blue">
+                            <i class="bi bi-diagram-3-fill me-2"></i>B. PILIHAN PROGRAM (AUTO-FILL)
+                        </h6>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-muted">PILIH PROGRAM AKTIVITI</label>
+                                <select name="program" id="program_select" class="form-select border-2 shadow-sm py-2" style="border-color: #e1f5fe;" required>
+                                    <option value="" {% if not t.program %}selected{% endif %}>-- Cari & Pilih Program / Planning --</option>
+                                    {% for p in senarai_program %}
+                                        <option value="{{ p.id }}" 
+                                                data-sektor="{{ p.sektor }}" 
+                                                data-kod="{{ p.os21000_a1|floatformat:0 }}"
+                                                {% if t.program and p.id == t.program.id %}selected{% endif %}> 
+                                            {{ p.nama_event }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3 rounded-3" style="background-color: #f8f9fa; border-left: 4px solid #4da3ff;">
+                                    <label class="small fw-bold text-muted d-block">Sektor Peneraju</label>
+                                    <input type="text" id="auto_sektor" class="form-control-plaintext fw-bold text-navy" readonly placeholder="-">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3 rounded-3" style="background-color: #f8f9fa; border-left: 4px solid #1a237e;">
+                                    <label class="small fw-bold text-muted d-block">Kod Aktiviti</label>
+                                    <input type="text" id="auto_kod_aktiviti" class="form-control-plaintext fw-bold text-primary" readonly placeholder="-">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4 mb-5 overflow-hidden">
+                    <div class="card-header bg-white py-3 border-0">
+                        <h6 class="mb-0 fw-bold text-success">
+                            <i class="bi bi-cash-stack me-2"></i>C. BUTIRAN TUNTUTAN ELAUN
+                        </h6>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-4">
+                            <label class="small fw-bold mb-2">Keterangan Tugas / Justifikasi</label>
+                            <textarea name="keterangan" class="form-control border-0 bg-light shadow-sm" rows="3" placeholder="Sila nyatakan ringkasan tugas..." required>{{ t.keterangan|default:'' }}</textarea>
+                        </div>
+
+                        <div class="table-responsive rounded-3">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-dark">
+                                    <tr class="small">
+                                        <th class="ps-4 py-3">JENIS ELAUN & KOD AKAUN</th>
+                                        <th class="text-end pe-4 py-3" style="width: 250px;">AMAUN TUNTUTAN (RM)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="border-top-0">
+                                    <tr>
+                                        <td class="ps-4">1. ELAUN MAKAN/HARIAN (21101)</td>
+                                        <td class="pe-4"><input type="number" step="0.01" name="e21101" class="form-control text-end border-0 bg-light shadow-sm amaun-input" value="{{ t.e21101|default:0.00 }}" oninput="kiraTotal()"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-4">2. BAYARAN SEWA HOTEL/LOJING (21102)</td>
+                                        <td class="pe-4"><input type="number" step="0.01" name="e21102" class="form-control text-end border-0 bg-light shadow-sm amaun-input" value="{{ t.e21102|default:0.00 }}" oninput="kiraTotal()"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-4">3. TAMBANG KERETA API/LRT (21103)</td>
+                                        <td class="pe-4"><input type="number" step="0.01" name="e21103" class="form-control text-end border-0 bg-light shadow-sm amaun-input" value="{{ t.e21103|default:0.00 }}" oninput="kiraTotal()"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-4">4. ELAUN PERJALANAN/BAS/TEKSI (21104)</td>
+                                        <td class="pe-4"><input type="number" step="0.01" name="e21104" class="form-control text-end border-0 bg-light shadow-sm amaun-input" value="{{ t.e21104|default:0.00 }}" oninput="kiraTotal()"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-4">5. TAMBANG KAPAL/BOT (21105)</td>
+                                        <td class="pe-4"><input type="number" step="0.01" name="e21105" class="form-control text-end border-0 bg-light shadow-sm amaun-input" value="{{ t.e21105|default:0.00 }}" oninput="kiraTotal()"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-4">6. TAMBANG KAPAL TERBANG (21106)</td>
+                                        <td class="pe-4"><input type="number" step="0.01" name="e21106" class="form-control text-end border-0 bg-light shadow-sm amaun-input" value="{{ t.e21106|default:0.00 }}" oninput="kiraTotal()"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-4">7. BAYARAN TOL/PARKIR/DLL (21199)</td>
+                                        <td class="pe-4"><input type="number" step="0.01" name="e21199" class="form-control text-end border-0 bg-light shadow-sm amaun-input" value="{{ t.e21199|default:0.00 }}" oninput="kiraTotal()"></td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-primary border-top-0">
+                                        <td class="text-end fw-bold py-3 ps-4">JUMLAH KESELURUHAN (RM)</td>
+                                        <td class="pe-4 py-3"><input type="number" step="0.01" name="jumlah_tuntut" id="id_total_besar" class="form-control text-end fw-bold text-primary fs-5 border-0 bg-white" readonly value="{{ t.jumlah_tuntut|default:0.00 }}"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column flex-md-row gap-3 justify-content-center pb-5">
+                    <a href="/dashboard/" class="btn btn-light px-5 py-3 rounded-pill fw-bold text-muted shadow-sm">
+                        <i class="bi bi-x-circle me-2"></i>Batal & Pulang
+                    </a>
+                    <button type="submit" class="btn btn-primary px-5 py-3 rounded-pill fw-bold shadow-lg" id="btnHantar" style="background: linear-gradient(45deg, #1a237e, #4da3ff); border: none;">
+                        <i class="bi bi-send-check-fill me-2"></i>
+                        {% if edit_mode %}Hantar Pembetulan Sekarang{% else %}Hantar Permohonan Rasmi{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .text-navy { color: #1a237e; }
+    .text-sky-blue { color: #4da3ff; }
+    .table-hover tbody tr:hover { background-color: rgba(77, 163, 255, 0.05); transition: 0.3s; }
+    input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+</style>
+
+<script>
+    // Fungsi untuk update Sektor & Kod secara manual
+    function updateAutoFields() {
+        const select = document.getElementById('program_select');
+        const selectedOption = select.options[select.selectedIndex];
+        
+        if (selectedOption && selectedOption.value !== "") {
+            const sektor = selectedOption.getAttribute('data-sektor') || "";
+            const kodAktiviti = selectedOption.getAttribute('data-kod') || "-";
+            document.getElementById('auto_sektor').value = sektor;
+            document.getElementById('auto_kod_aktiviti').value = kodAktiviti;
+        } else {
+            document.getElementById('auto_sektor').value = "";
+            document.getElementById('auto_kod_aktiviti').value = "";
+        }
+    }
+
+    // Listener untuk perubahan dropdown
+    document.getElementById('program_select').addEventListener('change', updateAutoFields);
+
+    // Logic Kira Total
+    function kiraTotal() {
+        let inputs = document.getElementsByClassName('amaun-input');
+        let total = 0;
+        for (let i = 0; i < inputs.length; i++) {
+            let n = parseFloat(inputs[i].value);
+            if (!isNaN(n)) { total += n; }
+        }
+        document.getElementById('id_total_besar').value = total.toFixed(2);
+    }
+
+    // Logic Tukar Label Pemohon
+    function tukarLabelPemohon() {
+        const jenis = document.getElementById('id_jenis_pemohon').value;
+        const labelNama = document.getElementById('label_nama');
+        const labelIC = document.getElementById('label_ic');
+        if (jenis === 'organisasi') {
+            labelNama.innerHTML = "Nama Organisasi / Syarikat";
+            labelIC.innerHTML = "No. Pendaftaran (SSM/ROS)";
+        } else {
+            labelNama.innerHTML = "Nama Penuh";
+            labelIC.innerHTML = "No. Kad Pengenalan";
+        }
+    }
+    
+    // Jalankan semua logic semasa page load
+    window.onload = function() {
+        tukarLabelPemohon();
+        kiraTotal();
+        updateAutoFields(); // Penting untuk Edit Mode supaya kotak Sektor & Kod terisi automatik
+    };
+</script>
+{% endblock %}

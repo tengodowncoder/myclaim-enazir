@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4 mb-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'ptdm_dashboard' %}" class="text-decoration-none">Dashboard PTDM</a></li>
+            <li class="breadcrumb-item active">{% if edit_mode %}Edit{% else %}Tambah{% endif %} Program</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-lg border-0" style="border-radius: 15px;">
+        <div class="card-header bg-dark text-white p-3" style="border-radius: 15px 15px 0 0;">
+            <h5 class="mb-0"><i class="bi bi-plus-square-fill me-2 text-warning"></i> CREATE NEW PLANNING / EVENT</h5>
+        </div>
+        <div class="card-body p-4 bg-light">
+            <form method="POST" id="programForm">
+                {% csrf_token %}
+                
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold text-uppercase small">Nama Event / Program</label>
+                                <input type="text" name="nama_event" class="form-control shadow-sm" value="{{ program.nama_event }}" placeholder="Contoh: Kursus Pemantapan ICT" required>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold text-uppercase small">Jenis Tugas</label>
+                                <input list="tugas_options" name="jenis_tugas" class="form-control shadow-sm" value="{{ program.jenis_tugas }}" placeholder="Pilih atau Taip Baru...">
+                                <datalist id="tugas_options">
+                                    {% for tugas in tugas_list %}
+                                        <option value="{{ tugas }}">
+                                    {% endfor %}
+                                </datalist>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold text-uppercase small">Sektor</label>
+                                <select name="sektor" class="form-select shadow-sm" required>
+                                    <option value="" disabled selected>-- Pilih Sektor --</option>
+                                    {% for kod, nama in sektor_list %}
+                                        <option value="{{ kod }}" {% if program.sektor == kod %}selected{% endif %}>{{ nama }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-3">
+                                <label class="fw-bold text-uppercase small">Unit</label>
+                                <input type="text" name="unit" class="form-control shadow-sm" value="{{ program.unit|default:'' }}" placeholder="Contoh: Unit Data">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="fw-bold text-uppercase small text-primary">Peruntukan</label> 
+                                <input type="text" name="peruntukan" id="id_peruntukan" list="list_peruntukan" class="form-control border-primary shadow-sm" value="{{ program.peruntukan|default:'' }}" oninput="autoFillKod()">
+                                <datalist id="list_peruntukan">
+                                    <option value="SEWAAN KPICT (BPM)">
+                                    <option value="PENYELENGGARAAN KPICT (BPM)">
+                                    <option value="KURIKULUM PERSEKOLAHAN 2027 (BPK)">
+                                    <option value="PLAN (BPK)">
+                                    <option value="STEM (BPPDP)">
+                                    <option value="KBAT">
+                                    <option value="MBMMBI (BPSH)">
+                                    <option value="GCPC (BKEW)">
+                                    <option value="TS25 (BPG)">
+                                    <option value="LDP (BPG)">
+                                    <option value="PENGURUSAN LATIHAN (IAB)">
+                                    <option value="PPDAS (BSKK)">
+                                    <option value="MAKmur">
+                                    <option value="PPPPC (BPSP)">
+                                    <option value="PEKPS (BPSH)">
+                                    <option value="DSA(JN)">
+                                    <option value="PERPADUAN (BSKK)">
+                                    <option value="PENGURUSAN (BPSM)">
+                                    <option value="MBMMBI (IPGM)">
+                                    <option value="INISIATIF#59">
+                                </datalist>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="fw-bold text-uppercase small">Kod Aktiviti</label> 
+                                <input type="text" name="kod_aktiviti" id="id_kod_aktiviti" class="form-control shadow-sm" value="{{ program.kod_aktiviti|default:'' }}" placeholder="Auto/Manual">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="fw-bold text-uppercase small">Bil. Peserta</label>
+                                <input type="number" name="bil_peserta" class="form-control shadow-sm" value="{{ program.bilangan_peserta|default:0 }}">
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold text-uppercase small">Tarikh Mula</label>
+                                <input type="date" name="tarikh_mula" class="form-control shadow-sm" value="{{ program.tarikh_mula|date:'Y-m-d' }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold text-uppercase small">Tarikh Tamat</label>
+                                <input type="date" name="tarikh_tamat" class="form-control shadow-sm" value="{{ program.tarikh_tamat|date:'Y-m-d' }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold text-uppercase small">Pegawai Bertanggungjawab</label>
+                                <input type="text" name="nama_pegawai" class="form-control shadow-sm" value="{{ program.pegawai_bertanggungjawab }}" placeholder="Nama Penyelaras">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold text-uppercase small">Gred</label>
+                                <input type="text" name="gred_pegawai" class="form-control shadow-sm" value="{{ program.gred_pegawai }}" placeholder="Contoh: DG44">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-calculator me-2"></i> PERINCIAN OBJEK SEBAGAI (OS)</h6>
+
+                <ul class="nav nav-tabs" id="osTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active fw-bold text-primary" id="anggaran-tab" data-bs-toggle="tab" data-bs-target="#anggaran" type="button" role="tab">
+                            <i class="bi bi-pencil-square me-1"></i> (A) ANGGARAN
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-bold text-success" id="komitmen-tab" data-bs-toggle="tab" data-bs-target="#komitmen" type="button" role="tab">
+                            <i class="bi bi-check-circle-fill me-1"></i> (B) KOMITMEN
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content border border-top-0 p-4 bg-white shadow-sm mb-4" id="osTabContent" style="border-radius: 0 0 15px 15px;">
+                    <div class="tab-pane fade show active" id="anggaran" role="tabpanel">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="small fw-bold">OS21000 (Perjalanan)</label>
+                                <input type="number" step="0.01" name="a1" class="form-control input-anggaran" value="{{ program.os21000_a1|default:0 }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small fw-bold">OS24000 (Sewaan)</label>
+                                <input type="number" step="0.01" name="a2" class="form-control input-anggaran" value="{{ program.os24000_a2|default:0 }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small fw-bold">OS27000 (Bekalan)</label>
+                                <input type="number" step="0.01" name="a3" class="form-control input-anggaran" value="{{ program.os27000_a3|default:0 }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small fw-bold">OS29000 (Ikhtisas)</label>
+                                <input type="number" step="0.01" name="a4" class="form-control input-anggaran" value="{{ program.os29000_a4|default:0 }}">
+                            </div>
+                            <div class="col-12 mt-4">
+                                <div class="p-3 bg-primary text-white rounded-3 shadow d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold"><i class="bi bi-wallet2 me-2"></i> JUMLAH ANGGARAN (A)</span>
+                                    <h4 class="mb-0 fw-bold">RM <span id="total_anggaran">0.00</span></h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="komitmen" role="tabpanel">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="small fw-bold text-success">OS21000 (Perjalanan)</label>
+                                <input type="number" step="0.01" name="b1" class="form-control input-komitmen border-success" value="{{ program.os21000_b1|default:0 }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small fw-bold text-success">OS24000 (Sewaan)</label>
+                                <input type="number" step="0.01" name="b2" class="form-control input-komitmen border-success" value="{{ program.os24000_b2|default:0 }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small fw-bold text-success">OS27000 (Bekalan)</label>
+                                <input type="number" step="0.01" name="b3" class="form-control input-komitmen border-success" value="{{ program.os27000_b3|default:0 }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small fw-bold text-success">OS29000 (Ikhtisas)</label>
+                                <input type="number" step="0.01" name="b4" class="form-control input-komitmen border-success" value="{{ program.os29000_b4|default:0 }}">
+                            </div>
+                            <div class="col-12 mt-4">
+                                <div id="komitmen_container" class="p-3 bg-success text-white rounded-3 shadow d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold"><i class="bi bi-check-all me-2"></i> JUMLAH KOMITMEN (B)</span>
+                                    <h4 class="mb-0 fw-bold">RM <span id="total_komitmen">0.00</span></h4>
+                                </div>
+                                <small id="overbudget_alert" class="text-danger fw-bold d-none mt-2">
+                                    <i class="bi bi-exclamation-triangle-fill"></i> Amaran: Komitmen melebihi anggaran!
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold text-uppercase small">Status Pelaksanaan</label>
+                                <select name="status" id="status_select" class="form-select border-info shadow-sm">
+                                    <option value="belum" {% if program.status_pelaksanaan == 'belum' %}selected{% endif %}>Belum Bermula</option>
+                                    <option value="berjalan" {% if program.status_pelaksanaan == 'berjalan' %}selected{% endif %}>Sedang Berjalan</option>
+                                    <option value="selesai" {% if program.status_pelaksanaan == 'selesai' %}selected{% endif %}>Selesai</option>
+                                    <option value="pinda" {% if program.status_pelaksanaan == 'pinda' %}selected{% endif %}>Dipinda</option>
+                                    <option value="batal" {% if program.status_pelaksanaan == 'batal' %}selected{% endif %}>Dibatalkan</option>
+                                </select>
+                            </div>
+                            <div class="col-md-8" id="justifikasi_area" style="display: none;">
+                                <label class="form-label fw-bold text-uppercase small text-danger">Justifikasi Perubahan (Pinda/Batal)</label>
+                                <textarea name="justifikasi" class="form-control border-danger" rows="2" placeholder="Wajib diisi jika program dipinda atau dibatalkan">{{ program.justifikasi }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex justify-content-between">
+                    <a href="{% url 'ptdm_dashboard' %}" class="btn btn-outline-secondary px-4 border shadow-sm">Batal</a>
+                    <button type="submit" class="btn btn-dark btn-lg px-5 shadow">
+                        <i class="bi bi-cloud-arrow-up-fill me-2"></i> PUBLISH PROGRAM
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // FUNGSI AUTO-FILL KOD AKTIVITI
+    function autoFillKod() {
+        const dataKod = {
+            "SEWAAN KPICT (BPM)": "010504",
+            "PENYELENGGARAAN KPICT (BPM)": "010507",
+            "KURIKULUM PERSEKOLAHAN 2027 (BPK)": "040307",
+            "PLAN (BPK)": "062305",
+            "STEM (BPPDP)": "062310",
+            "KBAT": "062304",
+            "MBMMBI (BPSH)": "060306",
+            "GCPC (BKEW)": "040407",
+            "TS25 (BPG)": "062201",
+            "LDP (BPG)": "050202",
+            "PENGURUSAN LATIHAN (IAB)": "050302",
+            "PPDAS (BSKK)": "062301",
+            "MAKmur": "020101",
+            "PPPPC (BPSP)": "062306",
+            "PEKPS (BPSH)": "062302",
+            "DSA(JN)": "040401",
+            "PERPADUAN (BSKK)": "062301",
+            "PENGURUSAN (BPSM)": "040401",
+            "MBMMBI (IPGM)": "060306",
+            "INISIATIF#59": "" // Kosong untuk inisiatif
+        };
+
+        const peruntukanInput = document.getElementById('id_peruntukan').value;
+        const kodInput = document.getElementById('id_kod_aktiviti');
+
+        if (dataKod[peruntukanInput] !== undefined) {
+            kodInput.value = dataKod[peruntukanInput];
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputsA = document.querySelectorAll('.input-anggaran');
+        const inputsB = document.querySelectorAll('.input-komitmen');
+        const displayA = document.getElementById('total_anggaran');
+        const displayB = document.getElementById('total_komitmen');
+        const komitmenContainer = document.getElementById('komitmen_container');
+        const budgetAlert = document.getElementById('overbudget_alert');
+        const statusSelect = document.getElementById('status_select');
+        const justifikasiArea = document.getElementById('justifikasi_area');
+
+        function calculate() {
+            let totalA = 0;
+            let totalB = 0;
+            inputsA.forEach(input => totalA += parseFloat(input.value) || 0);
+            inputsB.forEach(input => totalB += parseFloat(input.value) || 0);
+
+            displayA.innerText = totalA.toLocaleString('en-US', {minimumFractionDigits: 2});
+            displayB.innerText = totalB.toLocaleString('en-US', {minimumFractionDigits: 2});
+
+            if (totalB > totalA && totalA > 0) {
+                komitmenContainer.classList.replace('bg-success', 'bg-danger');
+                budgetAlert.classList.remove('d-none');
+            } else {
+                komitmenContainer.classList.replace('bg-danger', 'bg-success');
+                budgetAlert.classList.add('d-none');
+            }
+        }
+
+        function toggleJustification() {
+            const val = statusSelect.value;
+            if (val === 'pinda' || val === 'batal') {
+                justifikasiArea.style.display = 'block';
+            } else {
+                justifikasiArea.style.display = 'none';
+            }
+        }
+
+        [...inputsA, ...inputsB].forEach(input => input.addEventListener('input', calculate));
+        statusSelect.addEventListener('change', toggleJustification);
+
+        calculate();
+        toggleJustification();
+    });
+</script>
+{% endblock %}

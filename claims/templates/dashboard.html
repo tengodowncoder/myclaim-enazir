@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-0">Ringkasan Tuntutan</h2>
+            <p class="text-muted mb-0">Halo, <span class="text-primary fw-bold">{{ user.first_name }}</span>. Pantau status permohonan anda di sini.</p>
+        </div>
+        
+        <div class="d-flex gap-2">
+            <a href="{% url 'tuntut' %}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center">
+                <i class="bi bi-plus-circle me-2"></i>MOHON TUNTUTAN BARU
+            </a>
+
+            {% if user.peranan == 'kewangan' or user.is_superuser %}
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center">
+                    <i class="bi bi-shield-lock me-2"></i>PANEL ADMIN
+                </a>
+            {% endif %}
+
+            {% if user.peranan == 'ptdm' %}
+                <a href="{% url 'ptdm_dashboard' %}" class="btn btn-navy rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center" style="background: #1a237e; color: white;">
+                    <i class="bi bi-calendar-event me-2"></i>URUS PLANNING
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if user.peranan == 'kns' %}
+    <div class="alert alert-warning d-flex justify-content-between align-items-center rounded-pill px-4 shadow-sm border-0 mb-4">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-eye-fill fs-4 me-3 text-dark"></i>
+            <div>
+                <strong class="text-dark d-block">Mod Pemerhati (KNS) Aktif</strong>
+                <small class="text-dark">Anda sedang melihat rekod peribadi. Klik butang untuk ke Portal Pemerhatian Sektor.</small>
+            </div>
+        </div>
+        <a href="{% url 'kns_dashboard' %}" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" style="background: #1a237e !important;">
+            <i class="bi bi-speedometer2 me-2"></i> Ke Portal Pemerhatian
+        </a>
+    </div>
+    {% endif %}
+
+    {% if count_reject > 0 %}
+    <div class="notification-toast shadow-sm"> 
+        <div class="alert alert-danger border-0 d-flex align-items-center p-2 mb-0" style="border-radius: 6px; background: white; border-left: 4px solid #dc3545 !important;">
+            <i class="bi bi-exclamation-circle-fill text-danger me-2" style="font-size: 1rem;"></i>
+            <div style="flex-grow: 1;">
+                <div class="fw-bold text-dark" style="font-size: 0.8rem;">Tindakan Diperlukan</div>
+                <div class="text-muted" style="font-size: 0.7rem;">{{ count_reject }} tuntutan ditolak.</div>
+            </div>
+            <button type="button" class="btn-close ms-2" data-bs-dismiss="alert" style="font-size: 0.5rem;"></button>
+        </div>
+    </div>
+
+    <div id="alertPeringatan" class="alert alert-danger border-0 shadow-sm d-flex align-items-center mb-4 p-2" role="alert" style="border-radius: 10px; background: #fff5f5; transition: all 0.5s ease;">
+        <div class="flex-shrink-0">
+            <i class="bi bi-exclamation-octagon-fill fs-5 me-2 text-danger"></i>
+        </div>
+        <div class="small text-danger fw-bold">
+            Peringatan: Terdapat rekod ditolak. Sila semak jadual di bawah untuk pembetulan.
+        </div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" style="font-size: 0.5rem;"></button>
+    </div>
+    {% endif %}
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 15px;">
+                <div class="card-body p-4 border-start border-success border-5">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <p class="text-uppercase small fw-bold text-muted mb-1">Jumlah Diluluskan</p>
+                            <h2 class="fw-bold text-success mb-0">RM {{ total_lulus }}</h2>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-3 rounded-circle">
+                            <i class="bi bi-check-circle-fill text-success fs-3"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 15px;">
+                <div class="card-body p-4 border-start border-warning border-5">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <p class="text-uppercase small fw-bold text-muted mb-1">Tuntutan Dalam Proses</p>
+                            <h2 class="fw-bold text-warning mb-0">{{ count_proses }} <span class="fs-6 fw-normal">Rekod</span></h2>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 p-3 rounded-circle">
+                            <i class="bi bi-hourglass-split text-warning fs-3"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 15px;">
+                <div class="card-body p-4 border-start border-danger border-5">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <p class="text-uppercase small fw-bold text-muted mb-1">Perlu Pembetulan (Ditolak)</p>
+                            <h2 class="fw-bold text-danger mb-0">{{ count_reject }} <span class="fs-6 fw-normal">Rekod</span></h2>
+                        </div>
+                        <div class="bg-danger bg-opacity-10 p-3 rounded-circle">
+                            <i class="bi bi-exclamation-triangle-fill text-danger fs-3"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0" style="border-radius: 15px;">
+        <div class="card-header bg-white py-3 border-0">
+            <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-clock-history me-2 text-primary"></i>Rekod Tuntutan Terkini</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-nowrap">
+                        <tr>
+                            <th class="ps-4">Program / Tarikh</th>
+                            <th>No. Kad Pengenalan</th>
+                            <th>Jumlah Dipohon (RM)</th>
+                            <th class="text-primary">Jumlah Diluluskan (RM)</th>
+                            <th>Status & Ulasan Admin</th>
+                            <th class="text-center">Tindakan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in tuntutan_saya %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold text-dark text-truncate" style="max-width: 250px;">{{ t.program.nama_event|default:"Tuntutan Manual" }}</div>
+                                <small class="text-muted"><i class="bi bi-calendar-event me-1"></i> {{ t.tarikh_mohon|date:"d M Y" }}</small>
+                            </td>
+                            <td class="small text-muted">{{ t.ic_manual }}</td>
+                            <td class="fw-bold">RM {{ t.jumlah_tuntut }}</td>
+                            
+                            <td class="fw-bold text-success">
+                                {% if t.status == 'lulus' %}
+                                    RM {{ t.jumlah_diluluskan }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if t.status == 'lulus' %}
+                                    <span class="badge rounded-pill bg-success-subtle text-success px-3 border border-success-subtle">LULUS</span>
+                                {% elif t.status == 'reject' %}
+                                    <span class="badge rounded-pill bg-danger-subtle text-danger px-3 border border-danger-subtle mb-2">DITOLAK</span>
+                                    <div class="p-2 bg-danger-subtle border border-danger rounded shadow-sm" style="max-width: 250px;">
+                                        <small class="fw-bold text-danger d-block text-uppercase" style="font-size: 0.6rem;">Sebab Penolakan:</small>
+                                        <p class="mb-0 text-dark italic small" style="line-height: 1.1;">"{{ t.ulasan_admin|default:'Sila rujuk Unit Kewangan.' }}"</p>
+                                    </div>
+                                {% else %}
+                                    <span class="badge rounded-pill bg-warning-subtle text-warning px-3 border border-warning-subtle">PROSES</span>
+                                {% endif %}
+                            </td>
+                            
+                            <td class="text-center text-nowrap">
+                                {% if t.status == 'proses' or t.status == 'reject' %}
+                                    <a href="{% url 'edit_tuntutan' t.pk %}" class="btn btn-sm btn-outline-primary shadow-sm me-1">
+                                        <i class="bi bi-pencil-square"></i> Edit
+                                    </a>
+                            
+                                    <a href="{% url 'padam_tuntutan' t.pk %}" class="btn btn-sm btn-outline-danger shadow-sm" 
+                                       onclick="return confirm('Adakah anda pasti ingin memadam tuntutan ini?')">
+                                        <i class="bi bi-trash"></i> Padam
+                                    </a>
+                                {% elif t.status == 'lulus' %}
+                                    <a href="{% url 'jana_pdf' t.pk %}" class="btn btn-sm btn-success shadow-sm">
+                                        <i class="bi bi-printer"></i> Cetak PDF
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-center py-4 text-muted">Tiada rekod.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    setTimeout(function() {
+        var toast = document.querySelector('.notification-toast');
+        if (toast) {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.5s ease';
+            setTimeout(function() { toast.remove(); }, 500);
+        }
+
+        var banner = document.getElementById('alertPeringatan');
+        if (banner) {
+            banner.style.opacity = '0';
+            banner.style.transform = 'translateY(-10px)';
+            banner.style.transition = 'all 0.5s ease';
+            setTimeout(function() { banner.remove(); }, 500);
+        }
+    }, 7000); 
+</script>
+{% endblock %}

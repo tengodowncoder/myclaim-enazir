@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    /* Desain asal anda kekal di sini */
+    .table-hover tbody tr:hover { background-color: rgba(13, 110, 253, 0.05) !important; transition: 0.3s; transform: scale(1.002); cursor: pointer; }
+    .badge { font-weight: 500; padding: 0.5em 1em; }
+    .card { transition: transform 0.3s ease, shadow 0.3s ease; }
+    .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+    .table-responsive { overflow-x: auto; background: white; border-radius: 15px; }
+    table.table { min-width: 1400px; table-layout: fixed; } 
+    .col-bil { width: 50px !important; } 
+    .col-program { width: 450px !important; } 
+    .col-sektor { width: 180px; } 
+    .col-pegawai { width: 200px; } 
+    .col-kewangan { width: 250px; } 
+    .col-status { width: 120px; } 
+    .col-tindakan { width: 130px; }
+    .info-mini-box { background: #f8f9fa; border-radius: 10px; padding: 10px; border: 1px solid #eee; }
+    .search-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border-radius: 20px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); margin-bottom: 30px; }
+    .action-wrapper { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+    
+    /* Style Tambahan untuk Maklumat Program */
+    .info-tag { font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
+    .justifikasi-box { background: #fffcf0; border-left: 4px solid #ffc107; padding: 8px 12px; border-radius: 4px; font-size: 0.8rem; line-height: 1.4; color: #555; }
+</style>
+
+<div class="container-fluid mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div><h3 class="fw-bold text-dark"><i class="bi bi-calendar-check me-2 text-primary"></i>DASHBOARD PTDM</h3><p class="text-muted">Pengurusan Perancangan Program Jemaah Nazir</p></div>
+        <a href="{% url 'ptdm_tambah_event' %}" class="btn btn-primary shadow rounded-pill px-4"><i class="bi bi-plus-circle me-2"></i>Tambah Planning Baru</a>
+    </div>
+
+    <div class="row mb-4 g-3">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-lg text-white p-3 h-100" style="border-radius: 20px; background: linear-gradient(45deg, #0d6efd, #00c6ff);">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div><span class="small text-uppercase fw-bold opacity-75">Jumlah Semua Program</span><h2 class="fw-bold mb-0 mt-1">{{ total_planning }}</h2></div>
+                    <div class="bg-white bg-opacity-25 p-2 rounded-circle"><i class="bi bi-list-stars fs-3"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-lg text-white p-3 h-100" style="border-radius: 20px; background: linear-gradient(45deg, #198754, #20c997);">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div><span class="small text-uppercase fw-bold opacity-75">Selesai</span><h2 class="fw-bold mb-0 mt-1">{{ total_selesai }}</h2></div>
+                    <div class="bg-white bg-opacity-25 p-2 rounded-circle"><i class="bi bi-check-circle-fill fs-3"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-lg text-dark p-3 h-100" style="border-radius: 20px; background: linear-gradient(45deg, #ffc107, #ffdb70);">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div><span class="small text-uppercase fw-bold opacity-75">Dipinda</span><h2 class="fw-bold mb-0 mt-1">{{ total_pinda }}</h2></div>
+                    <div class="bg-black bg-opacity-10 p-2 rounded-circle"><i class="bi bi-arrow-left-right fs-3"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-lg text-white p-3 h-100" style="border-radius: 20px; background: linear-gradient(45deg, #dc3545, #ff6b6b);">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div><span class="small text-uppercase fw-bold opacity-75">Dibatalkan</span><h2 class="fw-bold mb-0 mt-1">{{ total_batal }}</h2></div>
+                    <div class="bg-white bg-opacity-25 p-2 rounded-circle"><i class="bi bi-x-circle-fill fs-3"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="search-card">
+        <form method="GET" action="{% url 'ptdm_dashboard' %}" class="row g-3 align-items-center">
+            <div class="col-md-5">
+                <input type="text" name="search" class="form-control rounded-pill px-3" placeholder="Cari program..." value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-4">
+                <select name="sektor" class="form-select rounded-pill">
+                    <option value="">-- Semua Sektor --</option>
+                    {% for key, value in sektor_list %}<option value="{{ key }}" {% if request.GET.sektor == key %}selected{% endif %}>{{ value }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100 rounded-pill">CARI</button>
+                <a href="{% url 'ptdm_dashboard' %}" class="btn btn-light w-100 rounded-pill border">RESET</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="card shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="text-center col-bil">Bil.</th>
+                            <th class="col-program">Maklumat Program</th>
+                            <th class="col-sektor">Sektor / Unit</th>
+                            <th class="col-pegawai">Pegawai & Peruntukan</th>
+                            <th class="col-kewangan text-center">Kewangan (RM)</th>
+                            <th class="col-status text-center">Status</th>
+                            <th class="col-tindakan text-center">Tindakan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in semua_planning %}
+                        <tr>
+                            <td class="text-center fw-bold text-muted">{{ forloop.counter }}.</td>
+                            <td class="col-program">
+                                <div class="fw-bold text-dark text-uppercase mb-2" style="font-size: 0.95rem; line-height: 1.4;">{{ p.nama_event }}</div>
+                                
+                                <div class="d-flex flex-wrap gap-2 mb-2">
+                                    <div class="info-tag text-muted">
+                                        <i class="bi bi-calendar-event text-primary"></i> 
+                                        {{ p.tarikh_mula|date:"d/m/Y"|default:"-" }} - {{ p.tarikh_tamat|date:"d/m/Y"|default:"-" }}
+                                    </div>
+                                    <div class="info-tag text-muted border-start ps-2">
+                                        <i class="bi bi-people-fill text-success"></i> 
+                                        {{ p.bilangan_peserta|default:"0" }} Peserta
+                                    </div>
+                                    <div class="info-tag text-muted border-start ps-2">
+                                        <i class="bi bi-bookmark-fill text-info"></i> 
+                                        {{ p.jenis_tugas|default:"-" }}
+                                    </div>
+                                </div>
+
+                                <div class="justifikasi-box mt-1">
+                                    <small class="fw-bold d-block text-uppercase" style="font-size: 0.65rem; color: #856404;">Justifikasi / Catatan:</small>
+                                    {{ p.justifikasi|default:"Tiada justifikasi maklumat disediakan." }}
+                                </div>
+                            </td>
+                            <td class="col-sektor">
+                                <div class="badge bg-info text-dark mb-2 shadow-sm text-wrap w-100">{{ p.get_sektor_display }}</div>
+                                <div class="small text-secondary fw-bold text-uppercase">{{ p.unit|default:"-" }}</div>
+                            </td>
+                            <td class="col-pegawai">
+                                <div class="small fw-bold text-dark text-uppercase">{{ p.pegawai_bertanggungjawab }}</div>
+                                <div class="small text-muted">Gred: {{ p.gred_pegawai }}</div>
+                                <div class="badge bg-light text-primary border w-100 mt-2">P: {{ p.peruntukan }}</div>
+                            </td>
+                            <td class="px-3 col-kewangan">
+                                <div class="d-flex justify-content-between small text-muted"><span>Anggaran:</span><span class="fw-bold">RM {{ p.total_anggaran|floatformat:2 }}</span></div>
+                                <div class="d-flex justify-content-between small text-success"><span>Komitmen:</span><span class="fw-bold">RM {{ p.total_komitmen|floatformat:2 }}</span></div>
+                                
+                                <div class="info-mini-box shadow-sm mt-2">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="small fw-bold">Baki:</span>
+                                        <span class="fw-bold text-primary">RM {{ p.total_baki|floatformat:2 }}</span>
+                                    </div>
+                                    <div class="pt-1 border-top" style="font-size: 0.7rem; line-height: 1.5;">
+                                        <div class="d-flex justify-content-between text-primary fw-bold mb-1">
+                                            <span>Tuntutan Live:</span><span>RM {{ p.tuntutan_live|floatformat:2 }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between"><span>OS21:</span><span>RM{{ p.os21000_a1|floatformat:0 }}</span></div>
+                                        <div class="d-flex justify-content-between"><span>OS24:</span><span>RM{{ p.os24000_a2|floatformat:0 }}</span></div>
+                                        <div class="d-flex justify-content-between"><span>OS27:</span><span>RM{{ p.os27000_a3|floatformat:0 }}</span></div>
+                                        <div class="d-flex justify-content-between"><span>OS29:</span><span>RM{{ p.os29000_a4|floatformat:0 }}</span></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center col-status">
+                                {% if p.status_pelaksanaan == 'belum' %}<span class="badge rounded-pill bg-secondary w-100">Belum</span>
+                                {% elif p.status_pelaksanaan == 'berjalan' %}<span class="badge rounded-pill bg-primary w-100">Berjalan</span>
+                                {% elif p.status_pelaksanaan == 'selesai' %}<span class="badge rounded-pill bg-success w-100">Selesai</span>
+                                {% elif p.status_pelaksanaan == 'pinda' %}<span class="badge rounded-pill bg-warning text-dark w-100">Pinda</span>
+                                {% elif p.status_pelaksanaan == 'batal' %}<span class="badge rounded-pill bg-danger w-100">Batal</span>{% endif %}
+                            </td>
+                            <td class="text-center col-tindakan">
+                                <div class="action-wrapper">
+                                    <a href="{% url 'ptdm_edit_event' p.id %}" class="btn btn-sm btn-primary w-100 rounded-pill"><i class="bi bi-pencil-square me-1"></i>Edit</a>
+                                    <a href="{% url 'ptdm_padam_event' p.id %}" class="btn btn-sm btn-outline-danger w-100 rounded-pill" onclick="return confirm('Padam rekod ini?')"><i class="bi bi-trash me-1"></i>Padam</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">Tiada rekod program ditemui.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

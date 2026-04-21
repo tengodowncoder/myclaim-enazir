@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* --- STYLE ASAL: GLASSMORPHISM --- */
+    .stat-card-glass {
+        background: rgba(255, 255, 255, 0.4) !important;
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .badge-kns-vibrant {
+        background: linear-gradient(45deg, #ffc107, #ff9800) !important;
+        color: #000 !important;
+        font-weight: 800;
+        box-shadow: 0 4px 10px rgba(255, 193, 7, 0.3);
+    }
+
+    .text-navy { color: #1a237e; }
+    .text-sky-blue { color: #4da3ff; }
+    .bg-navy { background-color: #1a237e !important; }
+
+    /* --- STYLE DIPERBAIKI: MODERN CLEAN TABLE --- */
+    .kns-table-modern { 
+        width: 100%; 
+        border-collapse: separate; 
+        border-spacing: 0;
+        background: white;
+        border-radius: 16px;
+    }
+    .kns-table-modern thead th {
+        background: #f8fafc;
+        color: #64748b;
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        padding: 20px 15px; /* Tambah padding supaya tak rapat */
+        border-bottom: 2px solid #edf2f7;
+        letter-spacing: 0.5px;
+    }
+    .kns-table-modern tbody td {
+        padding: 18px 15px; /* Tambah jarak antara baris */
+        border-bottom: 1px solid #edf2f7;
+        font-size: 0.88rem;
+        vertical-align: middle;
+    }
+    .kns-table-modern tbody tr:hover { background: #fbfcfe; }
+
+    /* Tambah jarak khusus untuk kolum mata wang */
+    .col-amount {
+        min-width: 110px;
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+    }
+
+    .kns-badge {
+        padding: 6px 14px;
+        border-radius: 99px;
+        font-size: 0.7rem;
+        font-weight: 800;
+        display: inline-block;
+        white-space: nowrap;
+    }
+    .badge-red { background: #fef2f2; color: #dc2626; border: 1px solid #fee2e2; }
+    .badge-green { background: #f0fdf4; color: #16a34a; border: 1px solid #dcfce7; }
+    .badge-navy { background: #eff6ff; color: #1a237e; }
+
+    /* DataTables Search Box Styling */
+    .dataTables_filter input {
+        border-radius: 20px;
+        padding: 8px 20px;
+        border: 1px solid #e2e8f0;
+        outline: none;
+        width: 250px;
+    }
+</style>
+
+<div class="container-fluid py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-navy mb-0">Portal <span class="text-sky-blue">Pemerhatian (KNS)</span></h3>
+            <span class="badge badge-kns-vibrant mt-1 px-3 py-2 rounded-pill">
+                <i class="bi bi-eye-fill me-1"></i> MOD PEMERHATIAN SAHAJA
+            </span>
+        </div>
+        <div>
+            <button onclick="window.print()" class="btn btn-light btn-sm rounded-pill px-3 shadow-sm border">
+                <i class="bi bi-printer me-1"></i> Cetak Laporan
+            </button>
+        </div>
+    </div>
+
+    <div class="row mb-4 g-3">
+        <div class="col-md-4">
+            <div class="card stat-card-glass p-4 border-0 shadow-sm text-center">
+                <div class="brand-icon-circle mx-auto mb-2" style="width: 50px; height: 50px; font-size: 1.5rem; background: rgba(26, 35, 126, 0.1);">
+                    <i class="bi bi-collection text-navy"></i>
+                </div>
+                <h6 class="text-muted small fw-bold">Jumlah Program Dipantau</h6>
+                <h2 class="fw-bold text-navy mb-0">{{ ikut_program.count }}</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card-glass p-4 border-0 shadow-sm text-center">
+                <div class="brand-icon-circle mx-auto mb-2" style="width: 50px; height: 50px; font-size: 1.5rem; background: rgba(25, 135, 84, 0.1);">
+                    <i class="bi bi-check-circle text-success"></i>
+                </div>
+                <h6 class="text-muted small fw-bold">Total Perbelanjaan Sah</h6>
+                <h2 class="fw-bold text-success mb-0"><span class="fs-6">RM</span> {{ total_rm|floatformat:2 }}</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card-glass p-4 border-0 shadow-sm text-center">
+                <div class="brand-icon-circle mx-auto mb-2" style="width: 50px; height: 50px; font-size: 1.5rem; background: rgba(77, 163, 255, 0.1);">
+                    <i class="bi bi-activity text-primary"></i>
+                </div>
+                <h6 class="text-muted small fw-bold">Status Aliran Tunai</h6>
+                <h2 class="fw-bold text-primary mb-0">AKTIF</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="card stat-card-glass border-0 shadow-sm mb-4">
+        <div class="card-header bg-navy text-white border-0 py-3" style="border-radius: 20px 20px 0 0;">
+            <h6 class="mb-0 fw-bold"><i class="bi bi-grid-3x3-gap me-2"></i>Ringkasan Peruntukan Mengikut Sektor</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+                    <thead class="bg-light small text-uppercase">
+                        <tr class="text-center">
+                            <th>Sektor</th>
+                            <th>Bil. Program</th>
+                            <th>Total Anggaran (RM)</th>
+                            <th>Total Komitmen (RM)</th>
+                            <th>Tuntutan Sah (RM)</th>
+                            <th>Baki Bersih (RM)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in ringkasan_sektor %}
+                        <tr class="text-center fw-bold small">
+                            <td class="text-start text-navy">{{ s.sektor }}</td>
+                            <td class="text-muted">{{ s.bil_prog }}</td>
+                            <td>{{ s.total_anggaran|floatformat:2 }}</td>
+                            <td class="text-warning">{{ s.total_komitmen|floatformat:2 }}</td>
+                            <td class="text-primary">{{ s.total_sah|floatformat:2 }}</td>
+                            <td class="{% if s.baki_sektor < 0 %}text-danger{% else %}text-success{% endif %}">
+                                RM {{ s.baki_sektor|floatformat:2 }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card stat-card-glass border-0 shadow-sm mb-4">
+        <div class="card-header bg-transparent border-0 pt-4 px-4">
+            <h5 class="fw-bold text-navy mb-0"><i class="bi bi-list-task me-2"></i>Status Peruntukan Ikut Program</h5>
+        </div>
+        <div class="card-body p-4">
+            <div class="table-responsive">
+                <table id="jadualKNS" class="kns-table-modern">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;">#</th>
+                            <th style="min-width: 250px;">Program</th>
+                            <th class="text-center" style="min-width: 100px;">Peserta</th>
+                            <th class="text-end col-amount">Anggaran (RM)</th>
+                            <th class="text-end col-amount" style="color: var(--primary-navy);">Live RM</th>
+                            <th class="text-end col-amount">Baki RM</th>
+                            <th class="text-center" style="min-width: 120px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in ikut_program %}
+                        <tr>
+                            <td class="text-muted fw-bold text-center">{{ forloop.counter }}</td>
+                            <td>
+                                <span class="kns-badge badge-navy mb-1">{{ p.sektor }}</span>
+                                <div class="fw-bold text-dark" style="font-size: 0.85rem; line-height: 1.4;">{{ p.nama_event|upper }}</div>
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 fw-bold small" onclick="bukaModalPeserta('{{ p.id }}', '{{ p.nama_event }}')">
+                                    {{ p.bil_tuntut }} Orang
+                                </button>
+                            </td>
+                            <td class="text-end fw-bold text-secondary">{{ p.os21000_a1|floatformat:2 }}</td>
+                            <td class="text-end fw-bold text-primary">{{ p.tuntutan_live|floatformat:2 }}</td>
+                            <td class="text-end fw-bold {% if p.baki_val < 0 %}text-danger{% else %}text-dark{% endif %}">
+                                {{ p.baki_val|floatformat:2 }}
+                            </td>
+                            <td class="text-center">
+                                {% if p.baki_val < 0 %}
+                                    <span class="kns-badge badge-red">OVERCLAIM</span>
+                                {% else %}
+                                    <span class="kns-badge badge-green">STABIL</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalPeserta" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content stat-card-glass border-0">
+            <div class="modal-header bg-navy text-white border-0">
+                <h5 class="modal-title fw-bold" id="tajukModal">Senarai Peserta</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light small text-uppercase">
+                        <tr><th class="ps-4">No.</th><th>Nama</th><th>No. KP</th><th class="text-end pe-4">RM</th></tr>
+                    </thead>
+                    <tbody id="isiPeserta"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('#jadualKNS').DataTable({ 
+            "pageLength": 10,
+            "ordering": true,
+            "dom": '<"d-flex justify-content-between align-items-center mb-3"f>rtip',
+            "language": { "search": "", "searchPlaceholder": "Cari Nama Program..." }
+        });
+    });
+
+    function bukaModalPeserta(id, nama) {
+        document.getElementById('tajukModal').innerText = "SENARAI PESERTA: " + nama;
+        const tbody = document.getElementById('isiPeserta');
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4">Memuatkan...</td></tr>';
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPeserta')).show();
+        fetch(`/api/peserta/${id}/`).then(res => res.json()).then(data => {
+            tbody.innerHTML = ''; 
+            data.peserta.forEach((p, index) => {
+                tbody.innerHTML += `<tr><td class="ps-4">${index + 1}.</td><td class="fw-bold">${p.nama_manual}</td><td>${p.ic_manual}</td><td class="text-end pe-4 fw-bold text-success">${p.jumlah_tuntut.toFixed(2)}</td></tr>`;
+            });
+        });
+    }
+</script>
+{% endblock %}

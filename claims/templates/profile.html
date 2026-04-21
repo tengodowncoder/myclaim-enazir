@@ -1,0 +1,38 @@
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %} <h5 class="text-primary mb-3">Kemas Kini Maklumat (Isi yang perlu sahaja)</h5>
+
+    <div class="mb-3">
+        <label class="form-label font-weight-bold">Tukar Gambar Profil</label>
+        <input type="file" name="gambar" class="form-control">
+        <small class="text-muted">Muat naik gambar baru untuk menggantikan gambar lama.</small>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label font-weight-bold">Sektor</label>
+            <input type="text" name="sektor" class="form-control" placeholder="Contoh: SPKN, STDM">
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label font-weight-bold">Gred/Pangkat</label>
+            <input type="text" name="gred" class="form-control" placeholder="Contoh: Gred 41">
+        </div>
+    </div>
+
+    <div class="p-3 mb-3 border rounded bg-light">
+        <h6 class="text-danger fw-bold"><i class="bi bi-lock-fill"></i> Keselamatan (Tukar Kata Laluan)</h6>
+        <div class="mb-2">
+            <label class="small">Kata Laluan Lama</label>
+            <input type="password" name="pw_lama" class="form-control" placeholder="Wajib diisi jika ingin tukar password">
+        </div>
+        <div class="mb-2">
+            <label class="small">Kata Laluan Baru</label>
+            <input type="password" name="pw_baru" class="form-control" placeholder="Masukkan kata laluan baru">
+        </div>
+    </div>
+
+    <div class="d-grid">
+        <button type="submit" class="btn btn-success btn-lg shadow-sm">
+            <i class="bi bi-save me-2"></i>Simpan Perubahan
+        </button>
+    </div>
+</form>

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-0 p-4" style="border-radius: 15px;">
+                <div class="card-body text-center">
+                    <i class="bi bi-building-fill-check text-primary mb-3" style="font-size: 3rem;"></i>
+                    <h3 class="fw-bold">Selamat Datang!</h3>
+                    <p class="text-muted">Sila sahkan <strong>Sektor</strong> anda untuk melengkapkan pendaftaran profil eNazir.</p>
+                    
+                    <form method="POST" class="mt-4 text-start">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Pilih Sektor/Unit:</label>
+                            <select name="sektor" class="form-select form-select-lg" required>
+                                <option value="" selected disabled>-- Pilih Sektor --</option>
+                                {% for kod, nama in senarai_sektor %}
+                                    <option value="{{ kod }}">{{ nama }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg w-100 shadow-sm">
+                            Simpan & Masuk Dashboard <i class="bi bi-arrow-right ms-2"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

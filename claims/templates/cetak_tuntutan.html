@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+        }
+        body { 
+            font-family: Arial, sans-serif; 
+            font-size: 10pt; 
+            line-height: 1.5; 
+            color: #000;
+        }
+        
+        /* HEADER UTAMA */
+        .header { 
+            text-align: center; 
+            border-bottom: 2pt solid #000; 
+            padding-bottom: 10px; 
+            margin-bottom: 20px; 
+        }
+        .header h2 { margin: 0; font-size: 14pt; letter-spacing: 1px; }
+        .header h3 { margin: 5px 0 0 0; font-size: 11pt; font-weight: normal; }
+
+        /* TAJUK BORANG (FIXED: ELAK BERTINDIH) */
+        .title-container {
+            width: 100%;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .title-table {
+            margin: 0 auto;
+            border-collapse: collapse;
+        }
+        .title-table td {
+            border: 1.5pt solid #000;
+            padding: 8px 25px;
+            background-color: #f5f5f5;
+            text-align: center;
+            font-size: 11pt;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* STRUKTUR JADUAL KEMAS */
+        table.main-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            table-layout: fixed; /* Kunci supaya kolum tak lari */
+            margin-bottom: 20px;
+        }
+        .main-table th, .main-table td { 
+            border: 1px solid #000; 
+            padding: 10px; 
+            vertical-align: top;
+            word-wrap: break-word;
+        }
+        
+        /* LEBAR KOLUM (30% Label, 70% Value) */
+        .col-label { 
+            width: 30%; 
+            background-color: #ededed; 
+            font-weight: bold; 
+            font-size: 9pt;
+        }
+        .col-value { 
+            width: 70%; 
+        }
+        
+        /* HEADER SEKSYEN */
+        .section-header { 
+            background-color: #333; 
+            color: #ffffff; 
+            font-weight: bold; 
+            text-align: left; 
+            padding: 6px 10px;
+            font-size: 10pt;
+        }
+
+        /* FOOTER & PENGESAHAN */
+        .footer { margin-top: 40px; }
+        .declaration { font-size: 9pt; font-style: italic; margin-bottom: 50px; }
+        
+        .sign-box { 
+            width: 250px; 
+            text-align: center; 
+        }
+        .sign-line { 
+            border-top: 1px solid #000; 
+            margin-bottom: 5px; 
+        }
+        
+        .system-note { 
+            font-size: 8pt; 
+            color: #444; 
+            margin-top: 40px;
+            border-top: 0.5pt dashed #999;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>KEMENTERIAN PENDIDIKAN MALAYSIA</h2>
+        <h3>SISTEM E-NAZIR MYCLAIM</h3>
+    </div>
+
+    <div class="title-container">
+        <table class="title-table">
+            <tr>
+                <td>BORANG TUNTUTAN ELAUN (ID: #{{ t.id }})</td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="main-table">
+        <tr>
+            <td colspan="2" class="section-header">A. MAKLUMAT PEMOHON / ORGANISASI</td>
+        </tr>
+        <tr>
+            <td class="col-label">Jenis Pemohon</td>
+            <td class="col-value">{{ t.get_jenis_pemohon_display }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Nama Penuh / Organisasi</td>
+            <td class="col-value"><strong>{{ t.nama_manual|upper }}</strong></td>
+        </tr>
+        <tr>
+            <td class="col-label">No. Kad Pengenalan / Pendaftaran</td>
+            <td class="col-value">{{ t.ic_manual }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Sektor / Jabatan / Alamat</td>
+            <td class="col-value">{{ t.sektor_manual|default:user.sektor }}</td>
+        </tr>
+    </table>
+
+    <table class="main-table">
+        <tr>
+            <td colspan="2" class="section-header">B. BUTIRAN PROGRAM & KEWANGAN</td>
+        </tr>
+        <tr>
+            <td class="col-label">Program Peneraju</td>
+            <td class="col-value">{{ t.program.nama_program|default:"N/A" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Kod Aktiviti</td>
+            <td class="col-value"><code>{{ t.kod_aktiviti_auto }}</code></td>
+        </tr>
+        <tr>
+            <td class="col-label">Keterangan Tugas</td>
+            <td class="col-value">{{ t.keterangan }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">Tarikh Permohonan</td>
+            <td class="col-value">{{ t.tarikh_mohon|date:"d F Y" }}</td>
+        </tr>
+        <tr>
+            <td class="col-label">JUMLAH BESAR TUNTUTAN</td>
+            <td class="col-value" style="font-size: 11pt;"><strong>RM {{ t.jumlah_tuntut }}</strong></td>
+        </tr>
+        <tr>
+            <td class="col-label">Status Kelulusan</td>
+            <td class="col-value"><strong>{{ t.get_status_display|upper }}</strong></td>
+        </tr>
+    </table>
+
+    <div class="footer">
+        <p class="declaration">
+            Saya mengesahkan bahawa segala maklumat yang dinyatakan di atas adalah benar dan tuntutan ini dibuat mengikut peraturan kewangan yang sedang berkuat kuasa.
+        </p>
+        
+        <div class="sign-box">
+            <div class="sign-line"></div>
+            <strong>Tandatangan Pemohon</strong><br>
+            <span style="font-size: 9pt;">( {{ t.nama_manual|upper }} )</span>
+        </div>
+
+        <div class="system-note">
+            Dokumen ini dijana secara digital oleh Sistem eNazir MyClaim pada {{ t.tarikh_mohon|date:"d/m/Y H:i" }}.<br>
+            Cetakan komputer ini adalah sah dan tidak memerlukan tandatangan fizikal untuk kegunaan audit dalaman.
+        </div>
+    </div>
+
+</body>
+</html>

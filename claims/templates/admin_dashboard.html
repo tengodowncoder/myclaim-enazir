@@ -1,0 +1,360 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* --- 1. CSS UTAMA (GLASSMORPHISM) --- */
+    :root {
+        --pulse-yellow: rgba(255, 193, 7, 0.7);
+        --glow-blue: rgba(77, 163, 255, 0.5);
+    }
+
+    .stat-card-glass {
+        background: rgba(255, 255, 255, 0.4) !important;
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card-glass:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(77, 163, 255, 0.15) !important;
+    }
+
+    /* --- FIX MODAL GELAP (Z-INDEX FIX) --- */
+    .modal-backdrop { z-index: 1040 !important; }
+    .modal { z-index: 1050 !important; }
+    .modal-content {
+        background: #ffffff !important;
+        backdrop-filter: none !important;
+        border: none !important;
+        box-shadow: 0 10px 50px rgba(0,0,0,0.2);
+    }
+
+    /* --- 2. ANIMASI VIBRANT (PULSING & GLOW) --- */
+    @keyframes pulse-kns {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 var(--pulse-yellow); }
+        70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+    }
+
+    @keyframes glow-blue-pulse {
+        0% { box-shadow: 0 0 5px var(--glow-blue); border-color: var(--sky-blue); }
+        50% { box-shadow: 0 0 20px var(--sky-blue); border-color: #00c6ff; }
+        100% { box-shadow: 0 0 5px var(--glow-blue); border-color: var(--sky-blue); }
+    }
+
+    .badge-kns-vibrant {
+        animation: pulse-kns 2s infinite;
+        background: linear-gradient(45deg, #ffc107, #ff9800) !important;
+        color: #000 !important;
+        font-weight: 800;
+    }
+
+    .card-glow-active {
+        animation: glow-blue-pulse 3s infinite;
+        border: 2px solid var(--sky-blue) !important;
+    }
+
+    .counter-vibrant {
+        background: linear-gradient(45deg, #1a237e, #4da3ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+    }
+
+    .nav-tabs-glass .nav-link.active {
+        background: var(--sky-blue) !important;
+        color: white !important;
+        box-shadow: 0 5px 15px rgba(77, 163, 255, 0.3);
+    }
+
+    .dataTables_filter input {
+        border-radius: 20px;
+        padding: 5px 15px;
+        border: 1px solid #ddd;
+        margin-left: 10px;
+        outline: none;
+    }
+</style>
+
+<div class="container-fluid py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-navy mb-0">Unit <span class="text-sky-blue">Kewangan</span></h3>
+            {% if is_kns %}
+                <span class="badge badge-kns-vibrant shadow-sm mt-1 px-3 py-2 rounded-pill">
+                    <i class="bi bi-eye-fill me-1"></i> MOD PEMERHATIAN (KNS)
+                </span>
+            {% else %}
+                <p class="text-muted small">Panel Pengurusan & Kelulusan Tuntutan</p>
+            {% endif %}
+        </div>
+        <div class="d-flex gap-2">
+            {% if user.is_superuser %}
+            <a href="{% url 'urus_pengguna' %}" class="btn btn-navy btn-sm rounded-pill px-3 shadow-sm" style="background: var(--primary-navy); color: white;">
+                <i class="bi bi-people-fill me-1"></i> Urus Peranan
+            </a>
+            {% endif %}
+            <button onclick="exportData()" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm">
+                <i class="bi bi-file-earmark-excel me-1"></i> Export Excel
+            </button>
+        </div>
+    </div>
+
+    <div class="row mb-4 g-3">
+        <div class="col-md-3">
+            <div class="card stat-card-glass p-3 mb-3 border-0 shadow-sm text-center {% if bilangan > 0 %}card-glow-active{% endif %}">
+                <div class="brand-icon-circle mx-auto mb-2" style="width: 50px; height: 50px; font-size: 1.5rem; background: rgba(77, 163, 255, 0.1);">
+                    <i class="bi bi-file-earmark-plus text-sky-blue"></i>
+                </div>
+                <h6 class="text-muted small fw-bold">Tuntutan Baru</h6>
+                <h2 class="counter-vibrant mb-0">{{ bilangan }} <span class="fs-6 text-navy">Kes</span></h2>
+            </div>
+            <div class="card stat-card-glass p-3 border-0 shadow-sm text-center">
+                <div class="brand-icon-circle mx-auto mb-2" style="width: 50px; height: 50px; font-size: 1.5rem; background: rgba(25, 135, 84, 0.1);">
+                    <i class="bi bi-wallet2 text-success"></i>
+                </div>
+                <h6 class="text-muted small fw-bold">Jumlah RM (Selesai)</h6>
+                <h2 class="fw-bold text-success mb-0"><span class="fs-6">RM</span> {{ total_rm|floatformat:2 }}</h2>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <div class="card stat-card-glass h-100 border-0 shadow-sm p-3">
+                <h6 class="fw-bold text-navy mb-3"><i class="bi bi-bar-chart-line me-2 text-sky-blue"></i>Trend Bulanan</h6>
+                <canvas id="chartBulanan" style="max-height: 180px;"></canvas>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card-glass h-100 border-0 shadow-sm p-3 text-center">
+                <h6 class="fw-bold text-navy mb-1"><i class="bi bi-pie-chart me-2 text-sky-blue"></i>Agihan Sektor</h6>
+                <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                    <div style="width: 140px; margin-top: -5px;">
+                        <canvas id="chartSektor"></canvas>
+                    </div>
+                    <div id="chartLegendCustom" class="d-flex flex-wrap justify-content-center gap-3 mt-3 px-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card stat-card-glass border-0 shadow-sm mb-4">
+        <div class="card-header bg-transparent border-0 pt-3">
+            <ul class="nav nav-tabs nav-tabs-glass" id="adminTab" role="tablist">
+                <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#baru" type="button">Tuntutan Baru</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#selesai" type="button">Rekod Selesai</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabProgram" type="button">Ikut Program</button></li>
+            </ul>
+        </div>
+        
+        <div class="card-body tab-content p-0" id="adminTabContent">
+            <div class="tab-pane fade show active" id="baru" role="tabpanel">
+                <div class="table-responsive p-3">
+                    <table id="jadualBaru" class="table table-hover align-middle w-100">
+                        <thead class="table-navy text-white" style="background: var(--primary-navy);">
+                            <tr class="small text-uppercase">
+                                <th class="ps-3">Pemohon</th><th>No. KP</th><th>Sektor</th><th>Program</th><th>RM Mohon</th><th class="text-center">Amaun Lulus</th><th class="text-center pe-3">Tindakan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in semua_tuntutan %}
+                            <tr>
+                                <td class="ps-3 text-uppercase fw-bold text-navy small">{{ t.nama_manual|cut:"(MOE)" }}</td>
+                                <td class="small">{{ t.ic_manual }}</td>
+                                <td><span class="badge rounded-pill bg-light text-navy border small">{{ t.program.sektor }}</span></td>
+                                <td class="small">{{ t.program.nama_event }}</td>
+                                <td class="fw-bold small">RM {{ t.jumlah_tuntut }}</td>
+                                <td style="width: 180px;">
+                                    {% if not is_kns %}
+                                        <form action="{% url 'kemaskini_status' t.pk 'lulus' %}" method="POST" class="d-flex gap-1">
+                                            {% csrf_token %}
+                                            <input type="number" name="amaun_lulus" step="0.01" class="form-control form-control-sm border-0 bg-light fw-bold" value="{{ t.jumlah_tuntut }}" required>
+                                            <button type="submit" class="btn btn-sm btn-success shadow-sm">SAH</button>
+                                        </form>
+                                    {% else %}
+                                        <span class="badge bg-light text-muted border-0 small">Read Only</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if not is_kns %}
+                                        <button type="button" class="btn btn-sm btn-danger rounded-circle shadow-sm" data-bs-toggle="modal" data-bs-target="#modalTolak{{ t.id }}" title="Tolak Tuntutan">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    {% else %}<i class="bi bi-eye text-muted"></i>{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="selesai" role="tabpanel">
+                <div class="table-responsive p-3">
+                    <table id="jadualSelesai" class="table table-hover align-middle w-100">
+                        <thead class="table-light">
+                            <tr class="small text-uppercase"><th class="ps-3">Tarikh</th><th>Pemohon</th><th>No. KP</th><th>Sektor</th><th>Program</th><th>Lulus (RM)</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for r in rekod_selesai %}
+                            <tr>
+                                <td class="ps-3 small">{{ r.tarikh_mohon|date:"d/m/Y" }}</td>
+                                <td class="text-uppercase fw-bold small">{{ r.nama_manual|cut:"(MOE)" }}</td>
+                                <td class="small">{{ r.ic_manual }}</td>
+                                <td><span class="badge bg-light text-muted border small">{{ r.program.sektor }}</span></td>
+                                <td class="small">{{ r.program.nama_event }}</td>
+                                <td class="fw-bold text-success small">RM {{ r.jumlah_diluluskan }}</td>
+                                <td><span class="badge {% if r.status == 'lulus' %}bg-success{% else %}bg-danger{% endif %}">{{ r.status|upper }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="tabProgram" role="tabpanel">
+                <div class="table-responsive p-3">
+                    <table id="jadualDirektori" class="table table-hover align-middle w-100">
+                        <thead class="table-light">
+                            <tr class="small text-uppercase">
+                                <th class="ps-3" style="width: 50px;">BIL</th>
+                                <th>Sektor / Program</th>
+                                <th class="text-center">Peserta</th>
+                                <th class="text-center">Anggaran (RM)</th>
+                                <th class="text-center">Tuntutan Live</th>
+                                <th class="text-center">Diluluskan</th>
+                                <th class="text-center">Baki (RM)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in ikut_program %}
+                            <tr>
+                                <td class="ps-3 text-muted small fw-bold">{{ forloop.counter }}.</td>
+                                <td><span class="badge bg-navy text-white mb-1" style="background: #1a237e !important;">{{ p.sektor }}</span><div class="fw-bold text-navy small">{{ p.nama_event }}</div></td>
+                                <td class="text-center"><button class="btn btn-sm btn-success rounded-pill px-3 shadow-sm" onclick="bukaModalPeserta('{{ p.id }}', '{{ p.nama_event }}')">{{ p.bil_tuntut }} Orang</button></td>
+                                <td class="text-center small">RM {{ p.os21000_a1|floatformat:2 }}</td>
+                                <td class="text-center small">RM {{ p.tuntutan_live|floatformat:2 }}</td>
+                                <td class="text-center small">RM {{ p.tuntutan_sah|floatformat:2 }}</td>
+                                <td class="text-center fw-bold small {% if p.baki_val < 0 %}text-danger{% else %}text-success{% endif %}">RM {{ p.baki_val|floatformat:2 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% for t in semua_tuntutan %}
+<div class="modal fade" id="modalTolak{{ t.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white border-0">
+                <h6 class="modal-title fw-bold">Tolak Tuntutan: {{ t.nama_manual|truncatechars:20 }}</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{% url 'tolak_tuntutan' t.id %}" method="POST">
+                {% csrf_token %}
+                <div class="modal-body p-4 text-start">
+                    <label class="small fw-bold mb-2 text-dark">Sebab Penolakan:</label>
+                    <textarea name="ulasan" class="form-control" rows="3" placeholder="Sila nyatakan sebab..." required></textarea>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="submit" class="btn btn-danger btn-sm rounded-pill px-4">TOLAK SEKARANG</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<div class="modal fade" id="modalPeserta" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white border-0">
+                <h5 class="modal-title fw-bold" id="tajukModal">Senarai Peserta</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light small text-uppercase">
+                        <tr><th class="ps-4">No.</th><th>Nama</th><th>No. KP</th><th class="text-end pe-4">RM</th></tr>
+                    </thead>
+                    <tbody id="isiPeserta"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Init DataTables
+        $('#jadualBaru, #jadualSelesai, #jadualDirektori').DataTable({ 
+            "dom": 'lfrtip', 
+            "language": { "search": "Cari:" } 
+        });
+
+        // Data dari Django (Logic dikekalkan)
+        const bulananData = {{ chart_data_bulanan|safe }};
+        const sektorLabels = {{ chart_labels_sektor|safe }};
+        const sektorData = {{ chart_data_sektor|safe }};
+
+        // Chart Bulanan
+        const ctxB = document.getElementById('chartBulanan').getContext('2d');
+        new Chart(ctxB, {
+            type: 'bar',
+            data: {
+                labels: ['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogo','Sep','Okt','Nov','Dis'],
+                datasets: [{ label: 'RM', data: bulananData, backgroundColor: '#4da3ff', borderRadius: 5 }]
+            }
+        });
+
+        // Chart Sektor
+        const chartColors = ['#1a237e', '#4da3ff', '#00c6ff', '#dc3545', '#f39c12', '#27ae60', '#8e44ad', '#e84393', '#00cec9', '#6c5ce7'];
+        const ctxS = document.getElementById('chartSektor').getContext('2d');
+        new Chart(ctxS, {
+            type: 'doughnut',
+            data: {
+                labels: sektorLabels,
+                datasets: [{ data: sektorData, backgroundColor: chartColors, borderWidth: 0 }]
+            },
+            options: { cutout: '65%', plugins: { legend: { display: false } } }
+        });
+
+        // Legend Custom
+        const legendContainer = document.getElementById('chartLegendCustom');
+        if (legendContainer) {
+            legendContainer.innerHTML = '';
+            sektorLabels.forEach((label, i) => {
+                const color = chartColors[i % chartColors.length];
+                legendContainer.innerHTML += `
+                    <div class="d-flex align-items-center">
+                        <div style="width:12px; height:12px; background:${color}; border-radius:3px;" class="me-2"></div>
+                        <span style="font-size:0.8rem; font-weight:700; color:#333;">${label}</span>
+                    </div>`;
+            });
+        }
+    });
+
+    function bukaModalPeserta(id, nama) {
+        document.getElementById('tajukModal').innerText = "PESERTA: " + nama;
+        const tbody = document.getElementById('isiPeserta');
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>';
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPeserta')).show();
+        fetch(`/api/peserta/${id}/`).then(res => res.json()).then(data => {
+            tbody.innerHTML = '';
+            data.peserta.forEach((p, i) => {
+                tbody.innerHTML += `<tr><td class="ps-4">${i+1}</td><td class="fw-bold">${p.nama_manual}</td><td>${p.ic_manual}</td><td class="text-end pe-4">${p.jumlah_tuntut.toFixed(2)}</td></tr>`;
+            });
+        });
+    }
+</script>
+{% endblock %}

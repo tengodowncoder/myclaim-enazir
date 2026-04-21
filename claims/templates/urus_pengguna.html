@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-navy mb-0">Urus <span class="text-sky-blue">Peranan & Akses</span></h3>
+            <p class="text-muted small">Kawal selia akses staf dan peranan akaun melalui Google Auth.</p>
+        </div>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-navy btn-sm rounded-pill px-3 shadow-sm" style="border-color: var(--primary-navy); color: var(--primary-navy);">
+            <i class="bi bi-arrow-left me-1"></i> Kembali ke Dashboard
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.5) !important;">
+        <div class="card-header bg-white py-3 border-0 d-flex align-items-center justify-content-between">
+            <h6 class="mb-0 fw-bold text-navy"><i class="bi bi-people-fill me-2 text-sky-blue"></i>Senarai Kakitangan Terdaftar (SSO)</h6>
+            <span class="badge rounded-pill bg-navy px-3" style="background: var(--primary-navy);">{{ semua_user|length }} Orang</span>
+        </div>
+        
+        <div class="card-body p-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 w-100" id="tablePengguna">
+                    <thead class="table-navy text-white" style="background: var(--primary-navy);">
+                        <tr class="small text-uppercase">
+                            <th class="ps-4 py-3">Nama / Username</th>
+                            <th>No. Kad Pengenalan</th>
+                            <th>Peranan Semasa</th>
+                            <th>Tukar Peranan</th>
+                            <th class="text-center pe-4">Tindakan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in semua_user %}
+                        <tr class="interactive-row">
+                            <td class="ps-4">
+                                <h6 class="fw-bold mb-0 text-navy text-uppercase">{{ u.first_name|default:u.username }}</h6>
+                                <small class="text-muted"><i class="bi bi-google me-1 small"></i>{{ u.email|default:"Tiada Emel" }}</small>
+                            </td>
+                            <td class="text-muted small fw-bold">{{ u.no_ic }}</td>
+                            <td>
+                                {% if u.is_superuser %}
+                                    <span class="badge rounded-pill shadow-sm" style="background: #212529;"><i class="bi bi-star-fill me-1 text-warning"></i> ADMIN UTAMA</span>
+                                {% elif u.peranan == 'ptdm' %}
+                                    <span class="badge rounded-pill shadow-sm" style="background: var(--sky-blue);"><i class="bi bi-calendar-event me-1"></i> PTDM</span>
+                                {% elif u.is_staff %}
+                                    <span class="badge rounded-pill shadow-sm bg-success"><i class="bi bi-cash-coin me-1"></i> UNIT KEWANGAN</span>
+                                {% else %}
+                                    <span class="badge rounded-pill shadow-sm bg-secondary opacity-75">USER BIASA</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if u.id == user.id %}
+                                    <span class="badge bg-light text-muted border small">Akaun Sendiri</span>
+                                {% else %}
+                                <form action="{% url 'kemaskini_peranan' u.id %}" method="POST" class="d-flex gap-2">
+                                    {% csrf_token %}
+                                    <select name="peranan" class="form-select form-select-sm border-0 bg-light shadow-sm fw-bold" style="max-width: 150px; font-size: 0.75rem;">
+                                        <option value="user" {% if u.peranan == 'user' %}selected{% endif %}>User Biasa</option>
+                                        <option value="kewangan" {% if u.is_staff and not u.is_superuser %}selected{% endif %}>Unit Kewangan</option>
+                                        <option value="ptdm" {% if u.peranan == 'ptdm' %}selected{% endif %}>PTDM</option>
+                                        <option value="admin" {% if u.is_superuser %}selected{% endif %}>Admin Utama</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-sky-blue px-3 text-white shadow-sm" style="background: var(--sky-blue);">
+                                        <i class="bi bi-check-lg"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                            <td class="text-center pe-4">
+                                {% if u.id != user.id %}
+                                <div class="d-flex justify-content-center gap-1">
+                                    {% if not u.is_superuser %}
+                                    <a href="{% url 'padam_user' u.id %}" 
+                                       class="btn btn-sm btn-light text-danger border shadow-sm rounded-circle" 
+                                       title="Padam Pengguna"
+                                       onclick="return confirm('ADAKAH ANDA PASTI?\n\nTindakan ini akan membuang akses staf {{ u.first_name }} daripada sistem.')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                                {% else %}
+                                <i class="bi bi-lock-fill text-muted"></i>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mt-4 text-center py-3 bg-white bg-opacity-50 rounded-4">
+        <p class="small text-muted mb-0">
+            <i class="bi bi-info-circle-fill text-sky-blue me-1"></i> Nota: Sistem menggunakan <strong>Single Sign-On (SSO) Google MOE</strong>. Peranan staf ditentukan oleh Admin di panel ini.
+        </p>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('#tablePengguna').DataTable({
+            "pageLength": 25,
+            "ordering": true,
+            "dom": '<"d-flex justify-content-between align-items-center mb-3"lf>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
+            "language": {
+                "search": "",
+                "searchPlaceholder": "Cari Nama atau No. KP...",
+                "lengthMenu": "Pamerkan _MENU_ rekod",
+                "zeroRecords": "Maaf, nama atau No. KP tidak dijumpai",
+                "info": "Menunjukkan _START_ hingga _END_ daripada _TOTAL_ pengguna",
+                "paginate": {
+                    "next": "Seterusnya",
+                    "previous": "Sebelum"
+                }
+            }
+        });
+        
+        // Custom styling untuk search box supaya lebih 'Segak'
+        $('.dataTables_filter input').addClass('form-control shadow-sm border-2').css({
+            'border-color': 'var(--sky-blue)',
+            'border-radius': '20px',
+            'padding-left': '15px',
+            'width': '300px'
+        });
+    });
+</script>
+
+<style>
+    .table-navy { background: #1a237e; }
+    .btn-sky-blue:hover { background: #3b8ceb !important; transform: scale(1.05); }
+    .interactive-row { transition: 0.3s ease; }
+    .interactive-row:hover { background-color: rgba(77, 163, 255, 0.05) !important; }
+    
+    /* Cantikkan sikit dropdown length menu */
+    .dataTables_length select {
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        padding: 5px;
+        outline: none;
+    }
+</style>
+{% endblock %}
