@@ -11,7 +11,7 @@ from django.db.models.functions import ExtractMonth, Coalesce
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.template.loader import get_template
-
+from django.db.models import ProtectedError
 from xhtml2pdf import pisa
 
 from .forms import PendaftaranForm
@@ -30,7 +30,6 @@ def keluar_sistem(request):
     logout(request)
     return redirect('home')
 
-# 3. Dashboard Peribadi (Pegawai)
 # 3. Dashboard Peribadi (Pegawai)
 @login_required
 def dashboard(request):
@@ -106,6 +105,7 @@ def tuntut(request):
             jenis_pemohon=request.POST.get('jenis_pemohon'),
             nama_manual=request.POST.get('nama_manual', ''),
             ic_manual=request.POST.get('ic_manual', ''),
+            keterangan=request.POST.get('keterangan', ''),
             jumlah_tuntut=request.POST.get('jumlah_tuntut') or 0,
             status='proses'
         )
@@ -126,6 +126,7 @@ def edit_tuntutan(request, pk):
     tuntutan = get_object_or_404(Tuntutan, pk=pk, user=request.user)
     if request.method == 'POST':
         tuntutan.jumlah_tuntut = request.POST.get('jumlah_tuntut') or 0
+        tuntutan.keterangan = request.POST.get('keterangan', '')
         program_id = request.POST.get('program')
         if program_id:
             tuntutan.program = get_object_or_404(Program, id=program_id)
@@ -347,6 +348,8 @@ def senarai_peserta_json(request, program_id):
             'ic_manual': str(p.ic_manual or "-"),
             'sektor_manual': str(p.sektor_manual or "-"),
             'jumlah_tuntut': float(p.jumlah_tuntut or 0),
+            # TAMBAH LINE DI BAWAH NI:
+            'jumlah_diluluskan': float(p.jumlah_diluluskan or 0),
         })
     return JsonResponse({'peserta': peserta_list}, safe=False)
 
@@ -377,7 +380,14 @@ def admin_padam_tuntutan(request, pk):
 def jana_pdf(request, pk):
     tuntutan = get_object_or_404(Tuntutan, pk=pk)
     template = get_template('cetak_tuntutan.html')
-    html = template.render({'t': tuntutan})
+    
+    # KEMASKINI DI SINI: Tambah 'user': request.user
+    context = {
+        't': tuntutan,
+        'user': request.user  # Supaya template kenal siapa user yang tgh login
+    }
+    
+    html = template.render(context)
     result = BytesIO()
     pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
     return HttpResponse(result.getvalue(), content_type='application/pdf')
@@ -389,7 +399,7 @@ def export_tuntutan_csv(request):
     response['Content-Disposition'] = 'attachment; filename="Laporan_Tuntutan.csv"'
     writer = csv.writer(response)
     writer.writerow(['Tarikh', 'Nama', 'No. KP', 'Sektor', 'Program', 'Amaun (RM)', 'Status'])
-    for t in Tuntutan.objects.all():
+    for t in Tuntutan.objects.all().order_by('-tarikh_mohon'):
         writer.writerow([
             t.tarikh_mohon.strftime('%d/%m/%Y'), 
             t.nama_manual, 
@@ -414,27 +424,38 @@ def ptdm_dashboard(request):
     if request.user.peranan != 'ptdm' and not request.user.is_superuser:
         return redirect('dashboard')
     
+    # Ambil data dari URL (GET parameters)
+    status_filter = request.GET.get('status', '').strip() 
     search_query = request.GET.get('search', '').strip()
     sektor_filter = request.GET.get('sektor', '').strip()
 
-    # ASAL: Cuma selit tuntutan_live
+    # 1. KEKALKAN: Base Query untuk statistik (Supaya nombor card tak jadi 0 bila filter)
+    stats_base = Program.objects.all()
+
+    # 2. KEKALKAN: Query utama dengan tuntutan_live (100% ASAL)
     semua_planning = Program.objects.annotate(
         tuntutan_live=Coalesce(Sum('tuntutan__jumlah_tuntut'), 0.0, output_field=FloatField())
     ).order_by('-id')
     
+    # --- LOGIC FILTER TAMBAHAN DARI CARD (Hanya tapis table) ---
+    if status_filter:
+        semua_planning = semua_planning.filter(status_pelaksanaan__iexact=status_filter)
+
+    # 3. KEKALKAN: LOGIC SEARCH & SEKTOR ASAL
     if search_query:
         semua_planning = semua_planning.filter(Q(nama_event__icontains=search_query) | Q(pegawai_bertanggungjawab__icontains=search_query))
     if sektor_filter:
         semua_planning = semua_planning.filter(sektor__iexact=sektor_filter)
     
+    # 4. CONTEXT: Gunakan stats_base untuk Card supaya nombor sentiasa ada
     context = {
         'semua_planning': semua_planning,
-        'total_planning': semua_planning.count(),
-        'total_selesai': semua_planning.filter(status_pelaksanaan__icontains='selesai').count(),
-        'total_pinda': semua_planning.filter(status_pelaksanaan__icontains='pinda').count(),
-        'total_batal': semua_planning.filter(status_pelaksanaan__icontains='batal').count(),
-        'total_bajet': semua_planning.aggregate(Sum('os21000_a1'))['os21000_a1__sum'] or 0,
-        'total_pegawai': semua_planning.values('pegawai_bertanggungjawab').distinct().count(),
+        'total_planning': stats_base.count(),
+        'total_selesai': stats_base.filter(status_pelaksanaan__icontains='selesai').count(),
+        'total_pinda': stats_base.filter(status_pelaksanaan__icontains='pinda').count(),
+        'total_batal': stats_base.filter(status_pelaksanaan__icontains='batal').count(),
+        'total_bajet': stats_base.aggregate(Sum('os21000_a1'))['os21000_a1__sum'] or 0,
+        'total_pegawai': stats_base.values('pegawai_bertanggungjawab').distinct().count(),
         'sektor_list': Program.SEKTOR_CHOICES,
     }
     return render(request, 'ptdm_dashboard.html', context)
@@ -489,7 +510,22 @@ def ptdm_edit_event(request, pk):
 # 18. PTDM Padam Program
 @login_required
 def ptdm_padam_event(request, pk):
-    get_object_or_404(Program, pk=pk).delete()
+    # Ambil object program atau keluar 404 kalau tak wujud
+    program = get_object_or_404(Program, pk=pk)
+    
+    try:
+        # Cuba padam
+        program.delete()
+        messages.success(request, "Program berjaya dipadam!")
+    except ProtectedError:
+        # Jika ada 'lock' (ProtectedError), tangkap error tu dan bagi amaran cantik
+        messages.error(request, (
+            "RALAT: Program ini tidak boleh dipadam! "
+            "Sebab: Terdapat rekod tuntutan yang telah berdaftar di bawah program ini. "
+            "Sila padam tuntutan-tuntutan berkaitan terlebih dahulu."
+        ))
+    
+    # Redirect balik ke dashboard, tak perlu refresh manual atau tutup tab
     return redirect('ptdm_dashboard')
 
 # ==========================================
@@ -506,10 +542,33 @@ def urus_pengguna(request):
 # 20. Kemaskini Peranan (Role) User
 @login_required
 def kemaskini_peranan(request, user_id):
+    # 1. Bodyguard: Hanya Superuser boleh tukar role
+    if not request.user.is_superuser:
+        return redirect('admin_dashboard')
+
+    # 2. Guna CustomUser (ikut model kau)
+    from .models import CustomUser 
     target_user = get_object_or_404(CustomUser, id=user_id)
+    
     if request.method == 'POST':
-        target_user.peranan = request.POST.get('peranan')
+        peranan_baru = request.POST.get('peranan')
+        target_user.peranan = peranan_baru
+        
+        # 3. Agihan Kunci Pintu (is_staff & is_superuser)
+        if peranan_baru == 'admin':
+            target_user.is_superuser = True
+            target_user.is_staff = True
+        elif peranan_baru == 'kewangan' or peranan_baru == 'kns' or peranan_baru == 'ptdm':
+            # Role pengurusan perlukan is_staff untuk akses dashboard
+            target_user.is_superuser = False
+            target_user.is_staff = True
+        else: 
+            # User biasa tiada akses dashboard admin
+            target_user.is_superuser = False
+            target_user.is_staff = False
+            
         target_user.save()
+        
     return redirect('urus_pengguna')
 
 # 21. Padam Pengguna

@@ -229,6 +229,35 @@
             transform: translateY(-2px);
             filter: brightness(1.1);
         }
+        /* Animasi Lampu Berlari/Berpusing */
+        @keyframes borderRotate {
+        0% { box-shadow: 0 -4px 15px currentColor, 0 0 5px currentColor; }
+        25% { box-shadow: 4px 0 15px currentColor, 0 0 5px currentColor; }
+        50% { box-shadow: 0 4px 15px currentColor, 0 0 5px currentColor; }
+        75% { box-shadow: -4px 0 15px currentColor, 0 0 5px currentColor; }
+        100% { box-shadow: 0 -4px 15px currentColor, 0 0 5px currentColor; }
+        }
+
+        .alert-neon {
+        background: #fff !important;
+        position: relative;
+        border: 2px solid currentColor !important;
+        /* Cahaya ni yang akan berpusing sekeliling kotak */
+        animation: borderRotate 2s linear infinite;
+        transition: all 0.3s ease;
+        }
+
+        /* Warna Merah Garang */
+        .alert-neon-error {
+        color: #dc3545 !important;
+        background-color: #fff5f5 !important;
+        }
+
+        /* Warna Hijau Neon */
+        .alert-neon-success {
+        color: #198754 !important;
+        background-color: #f6fff9 !important;
+        }
 
     </style>
 </head>
@@ -330,9 +359,26 @@
 
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-pill px-4 shadow-sm border-0 mb-4" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div class="alert alert-dismissible fade show alert-neon 
+                    {% if message.tags == 'error' %}alert-neon-error{% elif message.tags == 'success' %}alert-neon-success{% else %}alert-info{% endif %} 
+                    mb-4" role="alert" style="border-radius: 12px; padding: 1.5rem;">
+                    
+                    <div class="d-flex align-items-center">
+                        {% if message.tags == 'error' %}
+                            <i class="bi bi-exclamation-octagon-fill fs-3 me-3 animate-pulse"></i>
+                            <div>
+                                <strong class="text-uppercase" style="letter-spacing: 1px;">SISTEM DIKUNCI</strong>
+                                <p class="mb-0">{{ message }}</p>
+                            </div>
+                        {% else %}
+                            <i class="bi bi-check-circle-fill fs-3 me-3"></i>
+                            <div>
+                                <strong class="text-uppercase" style="letter-spacing: 1px;">BERJAYA</strong>
+                                <p class="mb-0">{{ message }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             {% endfor %}
         {% endif %}

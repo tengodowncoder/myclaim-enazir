@@ -58,7 +58,7 @@
                                     {% for p in senarai_program %}
                                         <option value="{{ p.id }}" 
                                                 data-sektor="{{ p.sektor }}" 
-                                                data-kod="{{ p.os21000_a1|floatformat:0 }}"
+                                                data-kod="{{ p.kod_aktiviti }}"
                                                 {% if t.program and p.id == t.program.id %}selected{% endif %}> 
                                             {{ p.nama_event }}
                                         </option>

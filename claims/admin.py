@@ -18,8 +18,13 @@ class ProgramAdmin(ImportExportModelAdmin): # Ini dah betul
 
 # 3. Pendaftaran Tuntutan (KINI DENGAN IMPORT-EXPORT)
 @admin.register(Tuntutan)
-class TuntutanAdmin(ImportExportModelAdmin): # <--- TUKAR DARI admin.ModelAdmin KE ImportExportModelAdmin
+class TuntutanAdmin(ImportExportModelAdmin):
+    # GABUNGKAN SEMUA FIELD SEARCH DI SINI (SATU SAHAJA)
+    search_fields = ('id', 'nama_manual', 'ic_manual', 'keterangan')
+    
+    # TAMBAH 'id' DALAM LIST DISPLAY SUPAYA NOMBOR KELUAR DI DEPAN
     list_display = [
+        'id',             # <--- Tambah ID dkt sini supaya nampak nombor tuntutan
         'tarikh_mohon', 
         'nama_manual', 
         'program', 
@@ -29,7 +34,6 @@ class TuntutanAdmin(ImportExportModelAdmin): # <--- TUKAR DARI admin.ModelAdmin 
     ]
     
     list_filter = ['status', 'jenis_pemohon', 'tarikh_mohon', 'program__sektor']
-    search_fields = ['nama_manual', 'ic_manual', 'keterangan']
     ordering = ['-tarikh_mohon']
     
     fieldsets = (

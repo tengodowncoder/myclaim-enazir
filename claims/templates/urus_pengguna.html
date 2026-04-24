@@ -41,6 +41,8 @@
                             <td>
                                 {% if u.is_superuser %}
                                     <span class="badge rounded-pill shadow-sm" style="background: #212529;"><i class="bi bi-star-fill me-1 text-warning"></i> ADMIN UTAMA</span>
+                                {% elif u.peranan == 'kns' %} 
+                                    <span class="badge rounded-pill shadow-sm bg-warning text-dark"><i class="bi bi-eye-fill me-1"></i> KNS (PEMERHATI)</span>   
                                 {% elif u.peranan == 'ptdm' %}
                                     <span class="badge rounded-pill shadow-sm" style="background: var(--sky-blue);"><i class="bi bi-calendar-event me-1"></i> PTDM</span>
                                 {% elif u.is_staff %}
@@ -60,6 +62,7 @@
                                         <option value="kewangan" {% if u.is_staff and not u.is_superuser %}selected{% endif %}>Unit Kewangan</option>
                                         <option value="ptdm" {% if u.peranan == 'ptdm' %}selected{% endif %}>PTDM</option>
                                         <option value="admin" {% if u.is_superuser %}selected{% endif %}>Admin Utama</option>
+                                        <option value="kns" {% if u.peranan == 'kns' %}selected{% endif %}>KNS (Pemerhati)</option>
                                     </select>
                                     <button type="submit" class="btn btn-sm btn-sky-blue px-3 text-white shadow-sm" style="background: var(--sky-blue);">
                                         <i class="bi bi-check-lg"></i>

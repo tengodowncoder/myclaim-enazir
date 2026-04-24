@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    
     <style>
         @page {
             size: A4;
@@ -143,15 +145,17 @@
         </tr>
         <tr>
             <td class="col-label">Program Peneraju</td>
-            <td class="col-value">{{ t.program.nama_program|default:"N/A" }}</td>
+            <td class="col-value">{{ t.program.nama_event|default:"-" }}</td>
         </tr>
         <tr>
             <td class="col-label">Kod Aktiviti</td>
-            <td class="col-value"><code>{{ t.kod_aktiviti_auto }}</code></td>
+            <td class="col-value">
+                <code>{{ t.program.kod_aktiviti|default:t.kod_aktiviti_auto|default:"-" }}</code>
+            </td>
         </tr>
         <tr>
             <td class="col-label">Keterangan Tugas</td>
-            <td class="col-value">{{ t.keterangan }}</td>
+            <td class="col-value">{{ t.keterangan|linebreaksbr|default:"-" }}</td>
         </tr>
         <tr>
             <td class="col-label">Tarikh Permohonan</td>

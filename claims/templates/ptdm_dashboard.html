@@ -2,7 +2,7 @@
 
 {% block content %}
 <style>
-    /* Desain asal anda kekal di sini */
+    /* Desain asal anda kekal di sini - 100% ORIGINAL */
     .table-hover tbody tr:hover { background-color: rgba(13, 110, 253, 0.05) !important; transition: 0.3s; transform: scale(1.002); cursor: pointer; }
     .badge { font-weight: 500; padding: 0.5em 1em; }
     .card { transition: transform 0.3s ease, shadow 0.3s ease; }
@@ -33,36 +33,47 @@
 
     <div class="row mb-4 g-3">
         <div class="col-md-3">
-            <div class="card border-0 shadow-lg text-white p-3 h-100" style="border-radius: 20px; background: linear-gradient(45deg, #0d6efd, #00c6ff);">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div><span class="small text-uppercase fw-bold opacity-75">Jumlah Semua Program</span><h2 class="fw-bold mb-0 mt-1">{{ total_planning }}</h2></div>
-                    <div class="bg-white bg-opacity-25 p-2 rounded-circle"><i class="bi bi-list-stars fs-3"></i></div>
+            <a href="{% url 'ptdm_dashboard' %}" class="text-decoration-none h-100">
+                <div class="card border-0 shadow-lg text-white p-3 h-100" style="border-radius: 20px; background: linear-gradient(45deg, #0d6efd, #00c6ff);">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div><span class="small text-uppercase fw-bold opacity-75">Jumlah Semua Program</span><h2 class="fw-bold mb-0 mt-1">{{ total_planning }}</h2></div>
+                        <div class="bg-white bg-opacity-25 p-2 rounded-circle"><i class="bi bi-list-stars fs-3"></i></div>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
+
         <div class="col-md-3">
-            <div class="card border-0 shadow-lg text-white p-3 h-100" style="border-radius: 20px; background: linear-gradient(45deg, #198754, #20c997);">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div><span class="small text-uppercase fw-bold opacity-75">Selesai</span><h2 class="fw-bold mb-0 mt-1">{{ total_selesai }}</h2></div>
-                    <div class="bg-white bg-opacity-25 p-2 rounded-circle"><i class="bi bi-check-circle-fill fs-3"></i></div>
+            <a href="{% url 'ptdm_dashboard' %}?status=selesai" class="text-decoration-none h-100">
+                <div class="card border-0 shadow-lg text-white p-3 h-100" style="border-radius: 20px; background: linear-gradient(45deg, #198754, #20c997);">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div><span class="small text-uppercase fw-bold opacity-75">Selesai</span><h2 class="fw-bold mb-0 mt-1">{{ total_selesai }}</h2></div>
+                        <div class="bg-white bg-opacity-25 p-2 rounded-circle"><i class="bi bi-check-circle-fill fs-3"></i></div>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
+
         <div class="col-md-3">
-            <div class="card border-0 shadow-lg text-dark p-3 h-100" style="border-radius: 20px; background: linear-gradient(45deg, #ffc107, #ffdb70);">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div><span class="small text-uppercase fw-bold opacity-75">Dipinda</span><h2 class="fw-bold mb-0 mt-1">{{ total_pinda }}</h2></div>
-                    <div class="bg-black bg-opacity-10 p-2 rounded-circle"><i class="bi bi-arrow-left-right fs-3"></i></div>
+            <a href="{% url 'ptdm_dashboard' %}?status=pinda" class="text-decoration-none h-100">
+                <div class="card border-0 shadow-lg text-dark p-3 h-100" style="border-radius: 20px; background: linear-gradient(45deg, #ffc107, #ffdb70);">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div><span class="small text-uppercase fw-bold opacity-75">Dipinda</span><h2 class="fw-bold mb-0 mt-1">{{ total_pinda }}</h2></div>
+                        <div class="bg-black bg-opacity-10 p-2 rounded-circle"><i class="bi bi-arrow-left-right fs-3"></i></div>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
+
         <div class="col-md-3">
-            <div class="card border-0 shadow-lg text-white p-3 h-100" style="border-radius: 20px; background: linear-gradient(45deg, #dc3545, #ff6b6b);">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div><span class="small text-uppercase fw-bold opacity-75">Dibatalkan</span><h2 class="fw-bold mb-0 mt-1">{{ total_batal }}</h2></div>
-                    <div class="bg-white bg-opacity-25 p-2 rounded-circle"><i class="bi bi-x-circle-fill fs-3"></i></div>
+            <a href="{% url 'ptdm_dashboard' %}?status=batal" class="text-decoration-none h-100">
+                <div class="card border-0 shadow-lg text-white p-3 h-100" style="border-radius: 20px; background: linear-gradient(45deg, #dc3545, #ff6b6b);">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div><span class="small text-uppercase fw-bold opacity-75">Dibatalkan</span><h2 class="fw-bold mb-0 mt-1">{{ total_batal }}</h2></div>
+                        <div class="bg-white bg-opacity-25 p-2 rounded-circle"><i class="bi bi-x-circle-fill fs-3"></i></div>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 
@@ -105,22 +116,11 @@
                             <td class="text-center fw-bold text-muted">{{ forloop.counter }}.</td>
                             <td class="col-program">
                                 <div class="fw-bold text-dark text-uppercase mb-2" style="font-size: 0.95rem; line-height: 1.4;">{{ p.nama_event }}</div>
-                                
                                 <div class="d-flex flex-wrap gap-2 mb-2">
-                                    <div class="info-tag text-muted">
-                                        <i class="bi bi-calendar-event text-primary"></i> 
-                                        {{ p.tarikh_mula|date:"d/m/Y"|default:"-" }} - {{ p.tarikh_tamat|date:"d/m/Y"|default:"-" }}
-                                    </div>
-                                    <div class="info-tag text-muted border-start ps-2">
-                                        <i class="bi bi-people-fill text-success"></i> 
-                                        {{ p.bilangan_peserta|default:"0" }} Peserta
-                                    </div>
-                                    <div class="info-tag text-muted border-start ps-2">
-                                        <i class="bi bi-bookmark-fill text-info"></i> 
-                                        {{ p.jenis_tugas|default:"-" }}
-                                    </div>
+                                    <div class="info-tag text-muted"><i class="bi bi-calendar-event text-primary"></i> {{ p.tarikh_mula|date:"d/m/Y"|default:"-" }} - {{ p.tarikh_tamat|date:"d/m/Y"|default:"-" }}</div>
+                                    <div class="info-tag text-muted border-start ps-2"><i class="bi bi-people-fill text-success"></i> {{ p.bilangan_peserta|default:"0" }} Peserta</div>
+                                    <div class="info-tag text-muted border-start ps-2"><i class="bi bi-bookmark-fill text-info"></i> {{ p.jenis_tugas|default:"-" }}</div>
                                 </div>
-
                                 <div class="justifikasi-box mt-1">
                                     <small class="fw-bold d-block text-uppercase" style="font-size: 0.65rem; color: #856404;">Justifikasi / Catatan:</small>
                                     {{ p.justifikasi|default:"Tiada justifikasi maklumat disediakan." }}
@@ -135,26 +135,49 @@
                                 <div class="small text-muted">Gred: {{ p.gred_pegawai }}</div>
                                 <div class="badge bg-light text-primary border w-100 mt-2">P: {{ p.peruntukan }}</div>
                             </td>
+
                             <td class="px-3 col-kewangan">
-                                <div class="d-flex justify-content-between small text-muted"><span>Anggaran:</span><span class="fw-bold">RM {{ p.total_anggaran|floatformat:2 }}</span></div>
-                                <div class="d-flex justify-content-between small text-success"><span>Komitmen:</span><span class="fw-bold">RM {{ p.total_komitmen|floatformat:2 }}</span></div>
-                                
-                                <div class="info-mini-box shadow-sm mt-2">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <span class="small fw-bold">Baki:</span>
-                                        <span class="fw-bold text-primary">RM {{ p.total_baki|floatformat:2 }}</span>
+                                <style>
+                                    .kewangan-wrapper { font-size: 0.75rem; font-family: 'Inter', sans-serif; }
+                                    .input-toggle { display: none; }
+                                    .summary-badge { padding: 4px 10px; border-radius: 8px; font-weight: 800; display: flex; justify-content: space-between; margin-bottom: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+                                    .live-box { background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; }
+                                    .baki-box { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+                                    .nav-btns { display: flex; gap: 4px; margin: 8px 0 5px 0; }
+                                    .btn-toggle { cursor: pointer; flex: 1; text-align: center; padding: 4px; border-radius: 6px; font-size: 0.6rem; font-weight: 700; border: 1px solid #e5e7eb; background: #fff; color: #6b7280; transition: 0.2s; }
+                                    .slide-content { max-height: 0; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); background: #fff; border-radius: 12px; }
+                                    #chk-anggaran-{{ p.id }}:checked ~ .slide-anggaran { max-height: 200px; border: 1.5px solid #0d6efd; padding: 10px; margin-top: 5px; }
+                                    #chk-anggaran-{{ p.id }}:checked ~ .nav-btns .btn-anggaran { background: #0d6efd; color: #fff; border-color: #0d6efd; }
+                                    #chk-komitmen-{{ p.id }}:checked ~ .slide-komitmen { max-height: 200px; border: 1.5px solid #198754; padding: 10px; margin-top: 5px; }
+                                    #chk-komitmen-{{ p.id }}:checked ~ .nav-btns .btn-komitmen { background: #198754; color: #fff; border-color: #198754; }
+                                    .os-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dashed #f3f4f6; }
+                                </style>
+                                <div class="kewangan-wrapper">
+                                    <input type="checkbox" id="chk-anggaran-{{ p.id }}" class="input-toggle">
+                                    <input type="checkbox" id="chk-komitmen-{{ p.id }}" class="input-toggle">
+                                    <div class="summary-badge live-box"><span>LIVE:</span><span>RM {{ p.tuntutan_live|floatformat:2 }}</span></div>
+                                    <div class="summary-badge baki-box"><span>BAKI:</span><span class="{% if p.total_baki < 0 %}text-danger{% endif %}">RM {{ p.total_baki|floatformat:2 }}</span></div>
+                                    <div class="nav-btns">
+                                        <label for="chk-anggaran-{{ p.id }}" class="btn-toggle btn-anggaran text-uppercase">Info Anggaran</label>
+                                        <label for="chk-komitmen-{{ p.id }}" class="btn-toggle btn-komitmen text-uppercase">Info Komitmen</label>
                                     </div>
-                                    <div class="pt-1 border-top" style="font-size: 0.7rem; line-height: 1.5;">
-                                        <div class="d-flex justify-content-between text-primary fw-bold mb-1">
-                                            <span>Tuntutan Live:</span><span>RM {{ p.tuntutan_live|floatformat:2 }}</span>
-                                        </div>
-                                        <div class="d-flex justify-content-between"><span>OS21:</span><span>RM{{ p.os21000_a1|floatformat:0 }}</span></div>
-                                        <div class="d-flex justify-content-between"><span>OS24:</span><span>RM{{ p.os24000_a2|floatformat:0 }}</span></div>
-                                        <div class="d-flex justify-content-between"><span>OS27:</span><span>RM{{ p.os27000_a3|floatformat:0 }}</span></div>
-                                        <div class="d-flex justify-content-between"><span>OS29:</span><span>RM{{ p.os29000_a4|floatformat:0 }}</span></div>
+                                    <div class="slide-content slide-anggaran shadow-sm">
+                                        <div class="os-row text-primary fw-bold" style="border-bottom: 1px solid #0d6efd; font-size: 0.65rem;">PECAHAN ANGGARAN:</div>
+                                        <div class="os-row"><span>OS21:</span><span class="fw-bold">RM {{ p.os21000_a1|floatformat:0 }}</span></div>
+                                        <div class="os-row"><span>OS24:</span><span class="fw-bold">RM {{ p.os24000_a2|floatformat:0 }}</span></div>
+                                        <div class="os-row"><span>OS27:</span><span class="fw-bold">RM {{ p.os27000_a3|floatformat:0 }}</span></div>
+                                        <div class="os-row"><span>OS29:</span><span class="fw-bold">RM {{ p.os29000_a4|floatformat:0 }}</span></div>
+                                    </div>
+                                    <div class="slide-content slide-komitmen shadow-sm">
+                                        <div class="os-row text-success fw-bold" style="border-bottom: 1px solid #198754; font-size: 0.65rem;">PECAHAN KOMITMEN:</div>
+                                        <div class="os-row text-success"><span>OS21:</span><span class="fw-bold">RM {{ p.os21000_b1|floatformat:0 }}</span></div>
+                                        <div class="os-row text-success"><span>OS24:</span><span class="fw-bold">RM {{ p.os24000_b2|floatformat:0 }}</span></div>
+                                        <div class="os-row text-success"><span>OS27:</span><span class="fw-bold">RM {{ p.os27000_b3|floatformat:0 }}</span></div>
+                                        <div class="os-row text-success"><span>OS29:</span><span class="fw-bold">RM {{ p.os29000_b4|floatformat:0 }}</span></div>
                                     </div>
                                 </div>
                             </td>
+
                             <td class="text-center col-status">
                                 {% if p.status_pelaksanaan == 'belum' %}<span class="badge rounded-pill bg-secondary w-100">Belum</span>
                                 {% elif p.status_pelaksanaan == 'berjalan' %}<span class="badge rounded-pill bg-primary w-100">Berjalan</span>
@@ -170,9 +193,7 @@
                             </td>
                         </tr>
                         {% empty %}
-                        <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">Tiada rekod program ditemui.</td>
-                        </tr>
+                        <tr><td colspan="7" class="text-center py-5 text-muted">Tiada rekod program ditemui.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>

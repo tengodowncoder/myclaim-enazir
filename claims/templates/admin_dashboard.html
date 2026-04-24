@@ -2,7 +2,7 @@
 
 {% block content %}
 <style>
-    /* --- 1. CSS UTAMA (GLASSMORPHISM) --- */
+    /* --- 1. CSS UTAMA (GLASSMORPHISM) --- 100% ASAL */
     :root {
         --pulse-yellow: rgba(255, 193, 7, 0.7);
         --glow-blue: rgba(77, 163, 255, 0.5);
@@ -31,7 +31,7 @@
         box-shadow: 0 10px 50px rgba(0,0,0,0.2);
     }
 
-    /* --- 2. ANIMASI VIBRANT (PULSING & GLOW) --- */
+    /* --- 2. ANIMASI VIBRANT (PULSING & GLOW) --- 100% ASAL */
     @keyframes pulse-kns {
         0% { transform: scale(1); box-shadow: 0 0 0 0 var(--pulse-yellow); }
         70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
@@ -119,23 +119,8 @@
                 <h2 class="fw-bold text-success mb-0"><span class="fs-6">RM</span> {{ total_rm|floatformat:2 }}</h2>
             </div>
         </div>
-        <div class="col-md-5">
-            <div class="card stat-card-glass h-100 border-0 shadow-sm p-3">
-                <h6 class="fw-bold text-navy mb-3"><i class="bi bi-bar-chart-line me-2 text-sky-blue"></i>Trend Bulanan</h6>
-                <canvas id="chartBulanan" style="max-height: 180px;"></canvas>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card stat-card-glass h-100 border-0 shadow-sm p-3 text-center">
-                <h6 class="fw-bold text-navy mb-1"><i class="bi bi-pie-chart me-2 text-sky-blue"></i>Agihan Sektor</h6>
-                <div class="d-flex flex-column align-items-center justify-content-center h-100">
-                    <div style="width: 140px; margin-top: -5px;">
-                        <canvas id="chartSektor"></canvas>
-                    </div>
-                    <div id="chartLegendCustom" class="d-flex flex-wrap justify-content-center gap-3 mt-3 px-2"></div>
-                </div>
-            </div>
-        </div>
+        <div class="col-md-5"><div class="card stat-card-glass h-100 p-3"><canvas id="chartBulanan" style="max-height: 180px;"></canvas></div></div>
+        <div class="col-md-4"><div class="card stat-card-glass h-100 p-3 text-center"><canvas id="chartSektor" style="max-width: 140px; margin: auto;"></canvas><div id="chartLegendCustom" class="d-flex flex-wrap justify-content-center gap-2 mt-2"></div></div></div>
     </div>
 
     <div class="card stat-card-glass border-0 shadow-sm mb-4">
@@ -193,7 +178,9 @@
                 <div class="table-responsive p-3">
                     <table id="jadualSelesai" class="table table-hover align-middle w-100">
                         <thead class="table-light">
-                            <tr class="small text-uppercase"><th class="ps-3">Tarikh</th><th>Pemohon</th><th>No. KP</th><th>Sektor</th><th>Program</th><th>Lulus (RM)</th><th>Status</th></tr>
+                            <tr class="small text-uppercase">
+                                <th class="ps-3">Tarikh</th><th>Pemohon</th><th>No. KP</th><th>Sektor</th><th>Program</th><th>Lulus (RM)</th><th>Status</th>
+                            </tr>
                         </thead>
                         <tbody>
                             {% for r in rekod_selesai %}
@@ -271,19 +258,37 @@
 
 <div class="modal fade" id="modalPeserta" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white border-0">
-                <h5 class="modal-title fw-bold" id="tajukModal">Senarai Peserta</h5>
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+            <div class="modal-header bg-navy text-white border-0 py-3" style="background: #1a237e !important;">
+                <h5 class="modal-title fw-bold" id="tajukModal"><i class="bi bi-people-fill me-2"></i>Senarai Peserta</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-0">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light small text-uppercase">
-                        <tr><th class="ps-4">No.</th><th>Nama</th><th>No. KP</th><th class="text-end pe-4">RM</th></tr>
-                    </thead>
-                    <tbody id="isiPeserta"></tbody>
-                </table>
+                <div class="bg-light border-bottom p-3">
+                    <div class="row align-items-center g-0">
+                        <div class="col-5"><div id="statPeserta" class="small fw-bold text-muted text-uppercase">Memuatkan...</div></div>
+                        <div class="col-7 text-end d-flex justify-content-end align-items-center">
+                            <div class="text-end px-3">
+                                <span class="d-block text-muted fw-bold" style="font-size: 0.6rem;">TOTAL MOHON</span>
+                                <span id="totalMohonTop" class="fw-bold text-primary small">RM 0.00</span>
+                            </div>
+                            <div class="text-end border-start ps-3 py-1">
+                                <span class="d-block text-muted fw-bold" style="font-size: 0.6rem;">TOTAL LULUS</span>
+                                <span id="totalLulusTop" class="fw-bold text-success small">RM 0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-white small text-uppercase fw-bold text-muted border-bottom">
+                            <tr><th class="ps-4 py-3" style="width: 50px;">Bil.</th><th>Nama Peserta</th><th>No. KP</th><th class="text-end">Mohon (RM)</th><th class="text-end pe-4">Lulus (RM)</th></tr>
+                        </thead>
+                        <tbody id="isiPeserta"></tbody>
+                    </table>
+                </div>
             </div>
+            <div class="modal-footer bg-light border-0 py-2"><button type="button" class="btn btn-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">TUTUP</button></div>
         </div>
     </div>
 </div>
@@ -295,65 +300,51 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-    $(document).ready(function() {
-        // Init DataTables
-        $('#jadualBaru, #jadualSelesai, #jadualDirektori').DataTable({ 
-            "dom": 'lfrtip', 
-            "language": { "search": "Cari:" } 
-        });
+    // FUNGSI EXPORT MUKTAMAD
+    function exportData() {
+        window.location.href = "{% url 'export_tuntutan_csv' %}";
+    }
 
-        // Data dari Django (Logic dikekalkan)
+    $(document).ready(function() {
+        $('#jadualBaru, #jadualSelesai, #jadualDirektori').DataTable({ "dom": 'lfrtip', "language": { "search": "Cari:" } });
         const bulananData = {{ chart_data_bulanan|safe }};
         const sektorLabels = {{ chart_labels_sektor|safe }};
         const sektorData = {{ chart_data_sektor|safe }};
-
-        // Chart Bulanan
         const ctxB = document.getElementById('chartBulanan').getContext('2d');
-        new Chart(ctxB, {
-            type: 'bar',
-            data: {
-                labels: ['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogo','Sep','Okt','Nov','Dis'],
-                datasets: [{ label: 'RM', data: bulananData, backgroundColor: '#4da3ff', borderRadius: 5 }]
-            }
-        });
-
-        // Chart Sektor
+        new Chart(ctxB, { type: 'bar', data: { labels: ['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogo','Sep','Okt','Nov','Dis'], datasets: [{ label: 'RM', data: bulananData, backgroundColor: '#4da3ff', borderRadius: 5 }] }, options: { plugins: { legend: { display: true } } } });
         const chartColors = ['#1a237e', '#4da3ff', '#00c6ff', '#dc3545', '#f39c12', '#27ae60', '#8e44ad', '#e84393', '#00cec9', '#6c5ce7'];
         const ctxS = document.getElementById('chartSektor').getContext('2d');
-        new Chart(ctxS, {
-            type: 'doughnut',
-            data: {
-                labels: sektorLabels,
-                datasets: [{ data: sektorData, backgroundColor: chartColors, borderWidth: 0 }]
-            },
-            options: { cutout: '65%', plugins: { legend: { display: false } } }
-        });
-
-        // Legend Custom
+        new Chart(ctxS, { type: 'doughnut', data: { labels: sektorLabels, datasets: [{ data: sektorData, backgroundColor: chartColors, borderWidth: 0 }] }, options: { cutout: '65%', plugins: { legend: { display: false } } } });
         const legendContainer = document.getElementById('chartLegendCustom');
         if (legendContainer) {
             legendContainer.innerHTML = '';
             sektorLabels.forEach((label, i) => {
                 const color = chartColors[i % chartColors.length];
-                legendContainer.innerHTML += `
-                    <div class="d-flex align-items-center">
-                        <div style="width:12px; height:12px; background:${color}; border-radius:3px;" class="me-2"></div>
-                        <span style="font-size:0.8rem; font-weight:700; color:#333;">${label}</span>
-                    </div>`;
+                legendContainer.innerHTML += `<div class="d-flex align-items-center"><div style="width:12px; height:12px; background:${color}; border-radius:3px;" class="me-2"></div><span style="font-size:0.8rem; font-weight:700; color:#333;">${label}</span></div>`;
             });
         }
     });
 
     function bukaModalPeserta(id, nama) {
-        document.getElementById('tajukModal').innerText = "PESERTA: " + nama;
+        document.getElementById('tajukModal').innerHTML = `<i class="bi bi-people-fill me-2"></i>${nama}`;
         const tbody = document.getElementById('isiPeserta');
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>';
+        document.getElementById('statPeserta').innerText = "Memuatkan...";
+        document.getElementById('totalMohonTop').innerText = "RM 0.00";
+        document.getElementById('totalLulusTop').innerText = "RM 0.00";
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5"><div class="spinner-border text-primary spinner-border-sm"></div></td></tr>';
         bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPeserta')).show();
         fetch(`/api/peserta/${id}/`).then(res => res.json()).then(data => {
             tbody.innerHTML = '';
+            let sumMohon = 0; let sumLulus = 0;
+            if (data.peserta.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">Tiada maklumat peserta.</td></tr>'; document.getElementById('statPeserta').innerText = "Tiada Peserta"; return; }
             data.peserta.forEach((p, i) => {
-                tbody.innerHTML += `<tr><td class="ps-4">${i+1}</td><td class="fw-bold">${p.nama_manual}</td><td>${p.ic_manual}</td><td class="text-end pe-4">${p.jumlah_tuntut.toFixed(2)}</td></tr>`;
+                let mohon = parseFloat(p.jumlah_tuntut) || 0; let lulus = parseFloat(p.jumlah_diluluskan) || 0;
+                sumMohon += mohon; sumLulus += lulus;
+                tbody.innerHTML += `<tr><td class="ps-4 text-muted small">${i+1}</td><td><div class="fw-bold text-navy text-uppercase small">${p.nama_manual}</div><div class="text-muted" style="font-size: 0.7rem;">${p.sektor_manual || '-'}</div></td><td class="small">${p.ic_manual}</td><td class="text-end fw-bold text-primary small">RM ${mohon.toLocaleString('en-US', {minimumFractionDigits: 2})}</td><td class="text-end pe-4 fw-bold text-success small">RM ${lulus.toLocaleString('en-US', {minimumFractionDigits: 2})}</td></tr>`;
             });
+            document.getElementById('statPeserta').innerText = `${data.peserta.length} PESERTA`;
+            document.getElementById('totalMohonTop').innerText = `RM ${sumMohon.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            document.getElementById('totalLulusTop').innerText = `RM ${sumLulus.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
         });
     }
 </script>

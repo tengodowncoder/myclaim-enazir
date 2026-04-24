@@ -122,7 +122,7 @@ class Tuntutan(models.Model):
     nama_manual = models.CharField(max_length=255)           
     ic_manual = models.CharField(max_length=50)               
     sektor_manual = models.CharField(max_length=100, blank=True) 
-    program = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True)
+    program = models.ForeignKey(Program, on_delete=models.PROTECT, null=True, blank=True, related_name='tuntutan')
     kod_aktiviti_auto = models.CharField(max_length=20, blank=True)
     e21101 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     e21102 = models.DecimalField(max_digits=10, decimal_places=2, default=0)
